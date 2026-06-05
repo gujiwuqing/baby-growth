@@ -76,6 +76,18 @@ import { db, escapeSqlValue } from '@/utils/database'
 import { formatTime, getDeviceId } from '@/utils/device'
 import { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } from '@/utils/vaccineData'
 
+/** 将 uni.showModal 包装为 Promise，兼容 App 端 */
+const showConfirm = (title: string, content: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    uni.showModal({
+      title,
+      content,
+      success: (res) => resolve(!!res.confirm),
+      fail: () => resolve(false)
+    })
+  })
+}
+
 const activeTab = ref('free')
 const allVaccines = ref<any[]>([])
 let isInitializing = false
@@ -126,33 +138,33 @@ const showVaccineDetail = (vaccine: any) => {
   })
 }
 
-const recordVaccine = (vaccine: any) => {
+const recordVaccine = async (vaccine: any) => {
   // 获取疫苗详细信息
   const allVaccineList = [...FREE_VACCINES, ...PAID_VACCINES]
   const vaccineInfo = allVaccineList.find(v => 
     `${v.name}${v.dose}` === vaccine.name || v.name === vaccine.name
   )
   
-  uni.showModal({
-    title: '确认接种',
-    content: `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`,
-    success(res) {
-      if (!res.confirm) return
-      db.executeSql(`
-        UPDATE vaccines 
-        SET status = 'done', 
-            actual_date = ${Date.now()},
-            injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
-        WHERE id = ${vaccine.id}
-      `).then(() => {
-        uni.showToast({ title: '记录成功', icon: 'success' })
-        loadVaccines()
-      }).catch((error) => {
-        console.error('记录失败', error)
-        uni.showToast({ title: '记录失败', icon: 'none' })
-      })
-    }
-  })
+  const confirmed = await showConfirm(
+    '确认接种',
+    `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`
+  )
+  if (!confirmed) return
+  
+  try {
+    await db.executeSql(`
+      UPDATE vaccines 
+      SET status = 'done', 
+          actual_date = ${Date.now()},
+          injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
+      WHERE id = ${vaccine.id}
+    `)
+    uni.showToast({ title: '记录成功', icon: 'success' })
+    await loadVaccines()
+  } catch (error) {
+    console.error('记录失败', error)
+    uni.showToast({ title: '记录失败', icon: 'none' })
+  }
 }
 
 const babyBirthday = ref('')

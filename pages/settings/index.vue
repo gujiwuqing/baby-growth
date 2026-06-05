@@ -61,6 +61,18 @@ import { db, escapeSqlValue } from '@/utils/database'
 import { exportAllData, saveDataToFile } from '@/utils/export'
 import { readDataFromFile, importDataWithDedup } from '@/utils/import'
 
+/** 将 uni.showModal 包装为 Promise，兼容 App 端 */
+const showConfirm = (title: string, content: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    uni.showModal({
+      title,
+      content,
+      success: (res) => resolve(!!res.confirm),
+      fail: () => resolve(false)
+    })
+  })
+}
+
 const babyInfo = ref({
   name: '',
   gender: 1,
@@ -166,42 +178,37 @@ const importData = () => {
   // #endif
 }
 
-const clearAllData = () => {
-  uni.showModal({
-    title: '确认清空',
-    content: '此操作将清空所有数据，是否继续？',
-    success(res) {
-      if (!res.confirm) return
-      Promise.resolve()
-        .then(() => db.executeSql('DELETE FROM feeds'))
-        .then(() => db.executeSql('DELETE FROM diapers'))
-        .then(() => db.executeSql('DELETE FROM sleeps'))
-        .then(() => db.executeSql('DELETE FROM foods'))
-        .then(() => db.executeSql('DELETE FROM supplements'))
-        .then(() => db.executeSql('DELETE FROM growth_records'))
-        .then(() => db.executeSql('DELETE FROM photos'))
-        .then(() => db.executeSql('DELETE FROM vaccines'))
-        .then(() => db.executeSql('DELETE FROM reminders'))
-        .then(() => db.executeSql('DELETE FROM baby_info'))
-        .then(() => {
-          // 重置数据库内部状态，确保下次 initTables 能重新初始化表结构
-          db.resetState()
-          // 清除疫苗排期同步标记，下次进入疫苗页会重新初始化
-          uni.removeStorageSync('vaccine_synced_birthday')
-          
-          // 重置当前页面表单
-          babyInfo.value.name = ''
-          babyInfo.value.gender = 1
-          babyInfo.value.birthday = ''
-          
-          uni.showToast({ title: '清空成功', icon: 'success' })
-        })
-        .catch((error) => {
-          console.error('清空失败', error)
-          uni.showToast({ title: '清空失败', icon: 'none' })
-        })
-    }
-  })
+const clearAllData = async () => {
+  const confirmed = await showConfirm('确认清空', '此操作将清空所有数据，是否继续？')
+  if (!confirmed) return
+  
+  try {
+    await db.executeSql('DELETE FROM feeds')
+    await db.executeSql('DELETE FROM diapers')
+    await db.executeSql('DELETE FROM sleeps')
+    await db.executeSql('DELETE FROM foods')
+    await db.executeSql('DELETE FROM supplements')
+    await db.executeSql('DELETE FROM growth_records')
+    await db.executeSql('DELETE FROM photos')
+    await db.executeSql('DELETE FROM vaccines')
+    await db.executeSql('DELETE FROM reminders')
+    await db.executeSql('DELETE FROM baby_info')
+    
+    // 重置数据库内部状态，确保下次 initTables 能重新初始化表结构
+    db.resetState()
+    // 清除疫苗排期同步标记，下次进入疫苗页会重新初始化
+    uni.removeStorageSync('vaccine_synced_birthday')
+    
+    // 重置当前页面表单
+    babyInfo.value.name = ''
+    babyInfo.value.gender = 1
+    babyInfo.value.birthday = ''
+    
+    uni.showToast({ title: '清空成功', icon: 'success' })
+  } catch (error) {
+    console.error('清空失败', error)
+    uni.showToast({ title: '清空失败', icon: 'none' })
+  }
 }
 
 onShow(async () => {
