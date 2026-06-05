@@ -46,6 +46,7 @@ import { onShow } from '@dcloudio/uni-app'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
 import { db } from '@/utils/database'
 import { formatTime } from '@/utils/device'
+import { RECORD_TYPE_META } from '@/utils/recordTypes'
 
 interface RecordItem {
   id: string
@@ -67,19 +68,11 @@ const todayStats = ref({
 // 今日记录
 const todayRecords = ref<RecordItem[]>([])
 
-// 类型元信息
-const typeMeta: Record<string, { label: string; icon: string; color: string }> = {
-  breast: { label: '母乳', icon: '🤱', color: '#FF6BA8' },
-  formula: { label: '配方奶', icon: '🍼', color: '#FFA94D' },
-  bottle: { label: '瓶喂母乳', icon: '🍼', color: '#FF8FB8' },
-  diaper: { label: '换尿布', icon: '👶', color: '#FFC93C' },
-  sleep: { label: '睡眠', icon: '😴', color: '#A78BFA' },
-  food: { label: '辅食', icon: '🥣', color: '#F59E0B' },
-  supplement: { label: '营养补剂', icon: '💊', color: '#34D399' },
-  growth: { label: '成长指标', icon: '📏', color: '#3B82F6' }
-}
+// 类型元信息（统一引用公共常量）
+const typeMeta = RECORD_TYPE_META
 
 const formatMin = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`
   const m = Math.floor(seconds / 60)
   return `${m}min`
 }
@@ -114,36 +107,6 @@ const loadTodayData = async () => {
   if (feeds && feeds.length > 0) {
     todayStats.value.feeding = feeds[0].count
     todayStats.value.totalMilk = feeds[0].total || 0
-  }
-}
-
-// 加载最新成长数据
-const loadLatestGrowth = async () => {
-  // 暂时保留，但不展示
-  const result = await db.selectSql(`
-    SELECT * FROM growth_records 
-    ORDER BY timestamp DESC LIMIT 1
-  `)
-}
-
-// 加载疫苗进度
-const loadVaccineProgress = async () => {
-  const total = await db.selectSql('SELECT COUNT(*) as count FROM vaccines')
-  const done = await db.selectSql(`
-    SELECT COUNT(*) as count FROM vaccines WHERE status = 'done'
-  `)
-  
-  vaccineProgress.value = {
-    total: total && total.length > 0 ? total[0].count : 0,
-    done: done && done.length > 0 ? done[0].count : 0
-  }
-}
-
-// 加载照片数量
-const loadPhotoCount = async () => {
-  const result = await db.selectSql('SELECT COUNT(*) as count FROM photos')
-  if (result && result.length > 0) {
-    photoCount.value = result[0].count
   }
 }
 

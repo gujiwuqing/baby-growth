@@ -138,7 +138,7 @@
     </view>
 
     <view class="form-actions">
-      <button class="btn-cancel" @click="handleCancel">取消</button>
+      <button class="btn-cancel" @click="cancel">取消</button>
       <button class="btn-save" @click="handleSave">保存</button>
     </view>
   </view>
@@ -149,6 +149,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
 import { getDeviceId, formatTime } from '@/utils/device'
+import { useRecordSave } from '@/composables/useRecordSave'
+
+const { timeStrToTimestamp, cancel, save } = useRecordSave('feeding')
 
 // 喂养类型：breast(母乳计时) / formula(配方奶) / bottle(瓶喂母乳)
 const feedType = ref<'breast' | 'formula' | 'bottle'>('breast')
@@ -243,78 +246,65 @@ const onTimeChange = (e: any) => {
   formData.value.time = e.detail.value
 }
 
-const handleCancel = () => {
-  uni.reLaunch({ url: '/pages/index/index' })
-}
+const handleSave = () => {
+  // 母乳：计时/手动模式校验
+  if (feedType.value === 'breast') {
+    if (breastMode.value === 'timer') {
+      stopTimer()
+      if (leftDuration.value + rightDuration.value <= 0) {
+        uni.showToast({ title: '请先开始计时', icon: 'none' })
+        return
+      }
+    } else {
+      const leftSec = (Number(manualLeft.value) || 0) * 60
+      const rightSec = (Number(manualRight.value) || 0) * 60
+      if (leftSec + rightSec <= 0) {
+        uni.showToast({ title: '请输入喂奶时长', icon: 'none' })
+        return
+      }
+    }
+  } else {
+    if ((Number(formData.value.amount) || 0) <= 0) {
+      uni.showToast({ title: '请输入喂奶量', icon: 'none' })
+      return
+    }
+  }
 
-// 将 HH:mm 转换为今天对应的时间戳
-const timeStrToTimestamp = (timeStr: string): number => {
-  if (!timeStr) return Date.now()
-  const parts = timeStr.split(':')
-  const d = new Date()
-  d.setHours(parseInt(parts[0]) || 0, parseInt(parts[1]) || 0, 0, 0)
-  return d.getTime()
-}
-
-const handleSave = async () => {
-  try {
-    const now = Date.now()
-    const uniqueId = `${now}_feeding_${getDeviceId()}`
+  save(async ({ createdAt, uniqueId }) => {
     const deviceId = getDeviceId()
     const note = (formData.value.note || '').replace(/'/g, "''")
 
     if (feedType.value === 'breast') {
-      let leftSec = 0
-      let rightSec = 0
-      let startTs = 0
-      let endTs = now
+      let leftSec: number
+      let rightSec: number
+      let startTs: number
+      let endTs: number
 
       if (breastMode.value === 'timer') {
-        stopTimer()
         leftSec = leftDuration.value
         rightSec = rightDuration.value
-        if (leftSec + rightSec <= 0) {
-          uni.showToast({ title: '请先开始计时', icon: 'none' })
-          return
-        }
-        endTs = now
-        startTs = now - (leftSec + rightSec) * 1000
+        endTs = createdAt
+        startTs = createdAt - (leftSec + rightSec) * 1000
       } else {
         leftSec = (Number(manualLeft.value) || 0) * 60
         rightSec = (Number(manualRight.value) || 0) * 60
-        if (leftSec + rightSec <= 0) {
-          uni.showToast({ title: '请输入喂奶时长', icon: 'none' })
-          return
-        }
         startTs = timeStrToTimestamp(formData.value.time)
         endTs = startTs + (leftSec + rightSec) * 1000
       }
 
       await db.executeSql(`
         INSERT INTO feeds (unique_id, type, amount, unit, left_duration, right_duration, start_time, end_time, note, timestamp, device_id, created_at)
-        VALUES ('${uniqueId}', 'breast', 0, 'min', ${leftSec}, ${rightSec}, ${startTs}, ${endTs}, '${note}', ${startTs}, '${deviceId}', ${now})
+        VALUES ('${uniqueId}', 'breast', 0, 'min', ${leftSec}, ${rightSec}, ${startTs}, ${endTs}, '${note}', ${startTs}, '${deviceId}', ${createdAt})
       `)
     } else {
       const amount = Number(formData.value.amount) || 0
-      if (amount <= 0) {
-        uni.showToast({ title: '请输入喂奶量', icon: 'none' })
-        return
-      }
       const ts = timeStrToTimestamp(formData.value.time)
       await db.executeSql(`
         INSERT INTO feeds (unique_id, type, amount, unit, left_duration, right_duration, note, timestamp, device_id, created_at)
-        VALUES ('${uniqueId}', '${feedType.value}', ${amount}, 'ml', 0, 0, '${note}', ${ts}, '${deviceId}', ${now})
+        VALUES ('${uniqueId}', '${feedType.value}', ${amount}, 'ml', 0, 0, '${note}', ${ts}, '${deviceId}', ${createdAt})
       `)
     }
-
-    uni.showToast({ title: '保存成功', icon: 'success' })
-    setTimeout(() => {
-      uni.navigateBack()
-    }, 1200)
-  } catch (error) {
-    console.error('保存失败', error)
-    uni.showToast({ title: '保存失败', icon: 'none' })
-  }
+  })
 }
 
 // 加载上次母乳记录提示

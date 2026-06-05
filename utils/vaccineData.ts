@@ -346,7 +346,8 @@ export const PAID_VACCINES: VaccineData[] = [
  */
 export function getVaccinesByAge(months: number): VaccineData[] {
   const vaccines = [...FREE_VACCINES, ...PAID_VACCINES]
-  return vaccines.filter(v => v.ageMonths === months)
+  // ageMonths < 0 为暴露后接种等特殊疫苗，不按常规月龄推荐
+  return vaccines.filter(v => v.ageMonths >= 0 && v.ageMonths === months)
 }
 
 /**

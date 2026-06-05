@@ -17,6 +17,14 @@
       }
     },
     {
+      "path": "pages/feeding/detail",
+      "style": {
+        "navigationBarTitleText": "喂养详情",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/growth/index",
       "style": {
         "navigationBarTitleText": "身高体重",

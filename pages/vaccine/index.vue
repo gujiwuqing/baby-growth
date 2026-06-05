@@ -72,11 +72,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { db } from '@/utils/database'
+import { db, escapeSqlValue } from '@/utils/database'
 import { formatTime, getDeviceId } from '@/utils/device'
 
 const activeTab = ref('free')
 const allVaccines = ref<any[]>([])
+let isInitializing = false
 
 const doneCount = computed(() => {
   return allVaccines.value.filter(v => v.status === 'done').length
@@ -143,7 +144,7 @@ const recordVaccine = (vaccine: any) => {
               UPDATE vaccines 
               SET status = 'done', 
                   actual_date = ${Date.now()},
-                  injection_site = '${vaccineInfo?.injectionSite?.[0] || ''}'
+                  injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
               WHERE id = ${vaccine.id}
             `)
             
@@ -161,18 +162,13 @@ const recordVaccine = (vaccine: any) => {
 
 const babyBirthday = ref('')
 
-const loadVaccines = async () => {
+const loadVaccines = async (allowInit = true) => {
   try {
-    console.log('开始查询疫苗数据...')
-    
     const result = await db.selectSql(`
       SELECT * FROM vaccines ORDER BY scheduled_date ASC
     `)
     
-    console.log('查询结果:', result)
-    
     if (result && result.length > 0) {
-      console.log(`找到 ${result.length} 条疫苗数据`)
       allVaccines.value = result.map((v: any) => ({
         id: v.id,
         name: v.vaccine_name,
@@ -183,15 +179,12 @@ const loadVaccines = async () => {
         ageRange: calculateAgeRange(v.scheduled_date),
         note: v.note
       }))
-    } else {
-      console.log('疫苗数据为空，开始初始化...')
-      // 如果没有数据，初始化默认疫苗计划
+    } else if (allowInit) {
+      // 仅在首次允许时初始化，避免与 onShow 多路径重复触发
       await initDefaultVaccines()
     }
   } catch (error) {
     console.error('查询疫苗数据失败', error)
-    // 如果查询失败，也尝试初始化
-    await initDefaultVaccines()
   }
 }
 
@@ -207,97 +200,149 @@ const calculateAgeRange = (timestamp: number): string => {
   return `${months}月龄`
 }
 
+const MONTH_MS = 30 * 24 * 60 * 60 * 1000
+
+/**
+ * 生日变更后重算所有未接种疫苗的排期。
+ * 已接种(done)的保留实际接种日期不动；pending 的按 生日 + age_months 重算。
+ */
+const recalcScheduledDates = async (): Promise<boolean> => {
+  if (!babyBirthday.value) return false
+
+  const birthdayTime = new Date(babyBirthday.value).getTime()
+  if (isNaN(birthdayTime)) return false
+
+  const rows = await db.selectSql(`
+    SELECT id, vaccine_name, age_months, scheduled_date FROM vaccines WHERE status = 'pending'
+  `)
+  if (!rows || rows.length === 0) return false
+
+  let updatedCount = 0
+  for (const row of rows) {
+    const ageMonths = await resolveAgeMonths(row)
+    if (ageMonths === null) continue
+
+    const newScheduled = birthdayTime + ageMonths * MONTH_MS
+    if (newScheduled === row.scheduled_date) continue
+
+    await db.executeSql(`
+      UPDATE vaccines SET scheduled_date = ${newScheduled}, age_months = ${ageMonths} WHERE id = ${row.id}
+    `)
+    updatedCount++
+  }
+
+  return updatedCount > 0
+}
+
+/**
+ * 解析某条疫苗记录的接种月龄：优先取库中 age_months，
+ * 旧数据为空时从 vaccineData 静态数据按疫苗名匹配查出 ageMonths。
+ */
+let _vaccineDataCache: any = null
+const resolveAgeMonths = async (row: any): Promise<number | null> => {
+  if (row.age_months !== null && row.age_months !== undefined && row.age_months !== '') {
+    return Number(row.age_months)
+  }
+  // 旧数据无 age_months：从静态疫苗数据按 vaccine_name 精确匹配
+  if (!_vaccineDataCache) {
+    const { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } = await import('@/utils/vaccineData')
+    _vaccineDataCache = { vaccines: [...FREE_VACCINES, ...PAID_VACCINES], getVaccineFullName }
+  }
+  if (row.vaccine_name) {
+    const match = _vaccineDataCache.vaccines.find(
+      (v: any) => _vaccineDataCache.getVaccineFullName(v) === row.vaccine_name
+    )
+    if (match && match.ageMonths >= 0) return match.ageMonths
+  }
+  return null
+}
+
 const initDefaultVaccines = async () => {
+  // 并发锁：避免 onShow 与 loadVaccines 多路径重复初始化
+  if (isInitializing) return
+  isInitializing = true
+
   try {
-    console.log('开始初始化疫苗数据...')
-    
     // 从疫苗数据文件导入完整数据
     const { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } = await import('@/utils/vaccineData')
     
-    const allVaccines = [...FREE_VACCINES, ...PAID_VACCINES]
-    console.log(`准备插入 ${allVaccines.length} 条疫苗数据`)
+    const vaccineList = [...FREE_VACCINES, ...PAID_VACCINES]
     
-    // 如果有宝宝生日，根据生日计算接种时间
-    const babyBirthdayTime = babyBirthday.value 
-      ? new Date(babyBirthday.value).getTime()
-      : Date.now()
+    // 必须先有宝宝生日才能正确计算接种排期
+    if (!babyBirthday.value) {
+      uni.showToast({ title: '请先在设置中填写宝宝生日', icon: 'none' })
+      return
+    }
+    const babyBirthdayTime = new Date(babyBirthday.value).getTime()
+    const now = Date.now()
     
-    let successCount = 0
-    let failCount = 0
-    
-    for (const vaccine of allVaccines) {
+    for (let index = 0; index < vaccineList.length; index++) {
+      const vaccine = vaccineList[index]
       try {
         const scheduledDate = babyBirthdayTime + vaccine.ageMonths * 30 * 24 * 60 * 60 * 1000
-        const uniqueId = `${Date.now()}_${vaccine.name}_${vaccine.type}_${vaccine.dose}_${getDeviceId()}`
+        // 唯一 id 用稳定字段组合，避免毫秒内 Date.now() 冲突
+        const uniqueId = `${vaccine.type}_${vaccine.name}_${vaccine.dose}_${index}_${getDeviceId()}`
         const fullName = getVaccineFullName(vaccine)
         
         await db.executeSql(`
-          INSERT INTO vaccines (
-            unique_id, vaccine_name, vaccine_type, dose,
+          INSERT OR IGNORE INTO vaccines (
+            unique_id, vaccine_name, vaccine_type, dose, age_months,
             scheduled_date, status, device_id, created_at
           )
           VALUES (
-            '${uniqueId}', '${fullName}', '${vaccine.type}', '${vaccine.dose}',
-            ${scheduledDate}, 'pending', '${getDeviceId()}', ${Date.now()}
+            '${escapeSqlValue(uniqueId)}', '${escapeSqlValue(fullName)}', '${escapeSqlValue(vaccine.type)}', '${escapeSqlValue(vaccine.dose)}', ${vaccine.ageMonths},
+            ${scheduledDate}, 'pending', '${escapeSqlValue(getDeviceId())}', ${now}
           )
         `)
-        
-        successCount++
       } catch (error) {
         console.error(`插入疫苗数据失败: ${vaccine.name}`, error)
-        failCount++
       }
     }
     
-    console.log(`疫苗数据初始化完成：成功 ${successCount} 条，失败 ${failCount} 条`)
-    
-    // H5环境：保存数据到localStorage
-    // #ifndef APP-PLUS
-    db.saveToStorage()
-    console.log('H5环境：数据已保存到localStorage')
-    // #endif
-    
-    await loadVaccines()
+    // 初始化后重新加载，但不允许再次触发初始化，防止循环
+    await loadVaccines(false)
   } catch (error) {
     console.error('初始化疫苗数据失败', error)
     uni.showToast({ title: '初始化疫苗数据失败', icon: 'none' })
+  } finally {
+    isInitializing = false
   }
 }
 
 onShow(async () => {
+  // 重置并发锁，防止上次异常退出或清空数据后锁残留
+  isInitializing = false
+
   try {
-    console.log('疫苗接种页面加载...')
-    
     await db.open()
-    console.log('数据库已打开')
-    
     await db.initTables()
-    console.log('数据库表已初始化')
     
     // 加载宝宝信息
     const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
     if (babyResult && babyResult.length > 0) {
       babyBirthday.value = babyResult[0].birthday
-      console.log('宝宝生日:', babyBirthday.value)
     } else {
       // 如果没有宝宝信息，创建默认信息
       const now = Date.now()
       const birthday = formatTime(now, 'YYYY-MM-DD')
       await db.executeSql(`
         INSERT INTO baby_info (name, birthday, created_at, updated_at)
-        VALUES ('宝宝', '${birthday}', ${now}, ${now})
+        VALUES ('宝宝', '${escapeSqlValue(birthday)}', ${now}, ${now})
       `)
       babyBirthday.value = birthday
-      console.log('已创建默认宝宝信息，生日:', birthday)
-      
-      // H5环境：保存数据
-      // #ifndef APP-PLUS
-      db.saveToStorage()
-      // #endif
     }
     
     await loadVaccines()
-    console.log('疫苗数据加载完成')
+
+    // 生日变更检测：与上次同步过的生日不一致则重算未接种疫苗排期
+    const syncedBirthday = uni.getStorageSync('vaccine_synced_birthday')
+    if (babyBirthday.value && syncedBirthday !== babyBirthday.value) {
+      const changed = await recalcScheduledDates()
+      uni.setStorageSync('vaccine_synced_birthday', babyBirthday.value)
+      if (changed) {
+        await loadVaccines(false)
+      }
+    }
   } catch (error) {
     console.error('加载数据失败', error)
     uni.showToast({ title: '加载数据失败', icon: 'none' })

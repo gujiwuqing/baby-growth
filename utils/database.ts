@@ -1,5 +1,3 @@
-import { getDeviceId } from './device'
-
 /**
  * SQLite 数据库封装
  * APP环境使用SQLite，H5环境使用localStorage模拟
@@ -8,6 +6,7 @@ class Database {
   private dbName: string = 'baby_growth'
   private dbPath: string = '_doc/baby_growth.db'
   private isOpen: boolean = false
+  private tablesInitialized: boolean = false
   private localStorageKey: string = 'baby_growth_db'
   private data: Record<string, any[]> = {}
 
@@ -16,13 +15,17 @@ class Database {
    */
   async open(): Promise<void> {
     return new Promise((resolve, reject) => {
+      // 幂等守卫：已打开则直接返回，避免页面 onShow 重复打开
+      if (this.isOpen) {
+        resolve()
+        return
+      }
       // #ifdef APP-PLUS
       plus.sqlite.openDatabase({
         name: this.dbName,
         path: this.dbPath,
         success: () => {
           this.isOpen = true
-          console.log('数据库打开成功')
           resolve()
         },
         fail: (e: any) => {
@@ -33,7 +36,6 @@ class Database {
       // #endif
       
       // #ifndef APP-PLUS
-      console.log('非APP环境，使用本地存储')
       this.isOpen = true
       // 从localStorage加载数据
       try {
@@ -60,7 +62,6 @@ class Database {
         name: this.dbName,
         success: () => {
           this.isOpen = false
-          console.log('数据库关闭成功')
           resolve()
         },
         fail: (e: any) => {
@@ -90,7 +91,6 @@ class Database {
     // #ifndef APP-PLUS
     try {
       localStorage.setItem(this.localStorageKey, JSON.stringify(this.data))
-      console.log('数据已保存到localStorage')
     } catch (e) {
       console.error('保存本地存储失败', e)
     }
@@ -117,7 +117,6 @@ class Database {
       // #endif
       
       // #ifndef APP-PLUS
-      console.log('非APP环境，SQL:', sql)
       // 解析SQL语句并执行操作
       this.executeLocalSql(sql)
       resolve()
@@ -145,7 +144,6 @@ class Database {
       // #endif
       
       // #ifndef APP-PLUS
-      console.log('非APP环境，查询SQL:', sql)
       // 解析SQL查询并返回数据
       const result = this.selectLocalSql(sql)
       resolve(result)
@@ -159,17 +157,15 @@ class Database {
   private executeLocalSql(sql: string): void {
     const upperSql = sql.trim().toUpperCase()
     
-    console.log('执行SQL:', sql)
     
-    // INSERT 语句
-    if (upperSql.startsWith('INSERT INTO')) {
-      const match = sql.match(/INSERT INTO (\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+)\)/i)
+    // INSERT 语句（兼容 INSERT OR IGNORE INTO / INSERT OR REPLACE INTO）
+    const isIgnore = upperSql.includes('OR IGNORE')
+    if (upperSql.startsWith('INSERT')) {
+      const match = sql.match(/INSERT\s+(?:OR\s+\w+\s+)?INTO\s+(\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+)\)/i)
       if (match) {
         const table = match[1]
         const fieldsStr = match[2]
         const valuesStr = match[3]
-        
-        console.log('INSERT语句解析:', { table, fieldsStr, valuesStr })
         
         // 解析字段名
         const fields = fieldsStr.split(',').map(f => f.trim())
@@ -182,17 +178,27 @@ class Database {
           this.data[table] = []
         }
         
-        // 生成ID
-        const row: any = { id: this.data[table].length + 1 }
-        
-        // 映射字段和值
+        // 构建行数据
+        const row: any = {}
         fields.forEach((field, index) => {
           if (index < values.length) {
             row[field] = values[index]
           }
         })
         
-        console.log('插入行:', row)
+        // OR IGNORE 语义：unique_id 已存在则静默跳过
+        if (isIgnore && row.unique_id) {
+          const exists = this.data[table].some((r: any) => r.unique_id === row.unique_id)
+          if (exists) return
+        }
+        
+        // 生成ID：基于现有最大 id 单调递增
+        const maxId = this.data[table].reduce((max: number, item: any) => {
+          const itemId = Number(item.id) || 0
+          return itemId > max ? itemId : max
+        }, 0)
+        row.id = maxId + 1
+        
         this.data[table].push(row)
         this.saveToStorage()
       }
@@ -246,17 +252,11 @@ class Database {
           // 没有 WHERE，清空表
           this.data[table] = []
         } else {
-          // 有 WHERE，删除匹配的行
-          const whereParts = whereClause.split('AND').map(s => s.trim())
+          // 有 WHERE：所有条件均命中才删除（filter 返回 false 表示移除）
+          const whereParts = whereClause.split(/\s+AND\s+/i).map(s => s.trim())
           this.data[table] = this.data[table].filter(row => {
-            let matches = true
-            whereParts.forEach(cond => {
-              const [field, value] = cond.split('=').map(s => s.trim())
-              if (row[field] == this.parseValue(value)) {
-                matches = false
-              }
-            })
-            return matches
+            const allMatch = whereParts.every(cond => this.matchWhereCondition(row, cond))
+            return !allMatch
           })
         }
         
@@ -272,36 +272,45 @@ class Database {
     const values: any[] = []
     let current = ''
     let inString = false
-    let stringChar = ''
-    
+    let quoted = false
+
     for (let i = 0; i < valuesStr.length; i++) {
       const char = valuesStr[i]
-      
-      if ((char === "'" || char === '"') && !inString) {
+
+      if (char === "'" && !inString) {
         inString = true
-        stringChar = char
-      } else if (char === stringChar && inString) {
-        inString = false
-        stringChar = ''
+        quoted = true
+      } else if (char === "'" && inString) {
+        // SQL 转义：连续两个单引号代表字符串内的一个单引号
+        if (valuesStr[i + 1] === "'") {
+          current += "'"
+          i++
+        } else {
+          inString = false
+        }
       } else if (char === ',' && !inString) {
-        const trimmed = current.trim()
-        // 移除引号
-        const cleanValue = trimmed.replace(/^['"]|['"]$/g, '')
-        values.push(this.parseValue(cleanValue))
+        values.push(this.finalizeInsertValue(current.trim(), quoted))
         current = ''
+        quoted = false
       } else {
         current += char
       }
     }
-    
-    if (current.trim()) {
-      const trimmed = current.trim()
-      const cleanValue = trimmed.replace(/^['"]|['"]$/g, '')
-      values.push(this.parseValue(cleanValue))
+
+    if (current.trim() !== '' || quoted) {
+      values.push(this.finalizeInsertValue(current.trim(), quoted))
     }
-    
-    console.log('解析INSERT VALUES:', valuesStr, '=>', values)
+
     return values
+  }
+
+  /**
+   * H5环境：根据是否被引号包裹决定值类型。
+   * 带引号 → 强制字符串（保护电话号/前导 0 批次号）；裸值 → 走类型推断。
+   */
+  private finalizeInsertValue(raw: string, quoted: boolean): any {
+    if (quoted) return raw
+    return this.parseValue(raw)
   }
 
   /**
@@ -330,7 +339,7 @@ class Database {
       growth_records: ['unique_id', 'height', 'weight', 'head_circumference', 'note', 'timestamp', 'device_id', 'created_at'],
       photos: ['unique_id', 'photo_path', 'thumbnail_path', 'caption', 'month', 'timestamp', 'device_id', 'created_at'],
       reminders: ['type', 'title', 'content', 'reminder_time', 'is_enabled', 'repeat_type', 'last_triggered', 'created_at'],
-      vaccines: ['unique_id', 'vaccine_name', 'vaccine_type', 'dose', 'scheduled_date', 'actual_date', 'injection_site', 'batch_number', 'manufacturer', 'hospital', 'doctor', 'status', 'adverse_reaction', 'note', 'device_id', 'created_at']
+      vaccines: ['unique_id', 'vaccine_name', 'vaccine_type', 'dose', 'age_months', 'scheduled_date', 'actual_date', 'injection_site', 'batch_number', 'manufacturer', 'hospital', 'doctor', 'status', 'adverse_reaction', 'note', 'device_id', 'created_at']
     }
     return schemas[table] || []
   }
@@ -349,44 +358,19 @@ class Database {
       
       let data = this.data[table] || []
       
-      // WHERE 条件（完整实现）
-      const whereMatch = sql.match(/WHERE\s+(.+?)(?:\s+ORDER|\s+GROUP|\s+LIMIT|$)/i)
+      // WHERE 条件（支持 AND 连接的 = / != / >= / <= / > / < 比较）
+      const whereMatch = sql.match(/WHERE\s+([\s\S]+?)(?:\s+GROUP\s+BY|\s+ORDER\s+BY|\s+LIMIT|$)/i)
       if (whereMatch) {
         const condition = whereMatch[1].trim()
-        
-        // 处理 COUNT(*)
-        if (condition.includes('COUNT(*)')) {
-          return [{ count: data.length }]
-        }
-        
-        // 解析所有 AND 连接的条件
-        const conditions = condition.split('AND').map(c => c.trim())
+        const conditions = condition.split(/\s+AND\s+/i).map(c => c.trim())
         
         data = data.filter(row => {
-          return conditions.every(cond => {
-            // 处理 timestamp >= value
-            const gteMatch = cond.match(/(\w+)\s*>=\s*(\d+)/)
-            if (gteMatch) {
-              const field = gteMatch[1]
-              const value = Number(gteMatch[2])
-              return row[field] >= value
-            }
-            
-            // 处理 field = value
-            const eqMatch = cond.match(/(\w+)\s*=\s*(?:'([^']+)'|(\d+))/)
-            if (eqMatch) {
-              const field = eqMatch[1]
-              const value = eqMatch[2] || Number(eqMatch[3])
-              return row[field] == value
-            }
-            
-            return true
-          })
+          return conditions.every(cond => this.matchWhereCondition(row, cond))
         })
       }
       
       // GROUP BY
-      const groupMatch = sql.match(/GROUP BY\s+(\w+)/i)
+      const groupMatch = sql.match(/GROUP\s+BY\s+(\w+)/i)
       if (groupMatch) {
         const field = groupMatch[1]
         const groups: Record<string, any[]> = {}
@@ -404,6 +388,26 @@ class Database {
         }))
       }
       
+      // 聚合函数：COUNT(*) / SUM(field) / AVG(field)，可带 as 别名
+      if (/COUNT\s*\(|SUM\s*\(|AVG\s*\(/i.test(fields)) {
+        return [this.computeAggregates(fields, data)]
+      }
+      
+      // ORDER BY field [ASC|DESC]
+      const orderMatch = sql.match(/ORDER\s+BY\s+(\w+)\s*(ASC|DESC)?/i)
+      if (orderMatch) {
+        const field = orderMatch[1]
+        const desc = (orderMatch[2] || 'ASC').toUpperCase() === 'DESC'
+        data = [...data].sort((a, b) => {
+          const av = a[field]
+          const bv = b[field]
+          if (av === bv) return 0
+          if (av === null || av === undefined) return 1
+          if (bv === null || bv === undefined) return -1
+          return (av < bv ? -1 : 1) * (desc ? -1 : 1)
+        })
+      }
+      
       // LIMIT
       const limitMatch = sql.match(/LIMIT\s+(\d+)/i)
       if (limitMatch) {
@@ -418,6 +422,73 @@ class Database {
   }
 
   /**
+   * H5环境：匹配单个 WHERE 比较条件，支持 = / != / >= / <= / > / <
+   */
+  private matchWhereCondition(row: any, cond: string): boolean {
+    const opMatch = cond.match(/(\w+)\s*(>=|<=|!=|<>|=|>|<)\s*(?:'([^']*)'|([\d.]+))/)
+    if (!opMatch) return true
+
+    const field = opMatch[1]
+    const operator = opMatch[2]
+    const value = opMatch[3] !== undefined ? opMatch[3] : Number(opMatch[4])
+    const rowValue = row[field]
+
+    switch (operator) {
+      case '=':
+        return rowValue == value
+      case '!=':
+      case '<>':
+        return rowValue != value
+      case '>=':
+        return rowValue >= value
+      case '<=':
+        return rowValue <= value
+      case '>':
+        return rowValue > value
+      case '<':
+        return rowValue < value
+      default:
+        return true
+    }
+  }
+
+  /**
+   * H5环境：计算聚合函数 COUNT(*) / SUM(field) / AVG(field)，结果键取别名或表达式本身
+   */
+  private computeAggregates(fields: string, data: any[]): Record<string, any> {
+    const result: Record<string, any> = {}
+    const parts = fields.split(',').map(p => p.trim())
+
+    parts.forEach(part => {
+      const aliasMatch = part.match(/\s+as\s+(\w+)\s*$/i)
+      const alias = aliasMatch ? aliasMatch[1] : null
+      const expr = aliasMatch ? part.slice(0, aliasMatch.index).trim() : part
+
+      if (/COUNT\s*\(/i.test(expr)) {
+        result[alias || 'count'] = data.length
+        return
+      }
+
+      const sumMatch = expr.match(/SUM\s*\(\s*(\w+)\s*\)/i)
+      if (sumMatch) {
+        const field = sumMatch[1]
+        result[alias || 'total'] = data.reduce((sum, row) => sum + (Number(row[field]) || 0), 0)
+        return
+      }
+
+      const avgMatch = expr.match(/AVG\s*\(\s*(\w+)\s*\)/i)
+      if (avgMatch) {
+        const field = avgMatch[1]
+        const sum = data.reduce((acc, row) => acc + (Number(row[field]) || 0), 0)
+        result[alias || 'average'] = data.length > 0 ? sum / data.length : 0
+        return
+      }
+    })
+
+    return result
+  }
+
+  /**
    * 安全地为已存在的表添加列（列已存在时忽略错误）
    */
   async addColumnIfNotExists(table: string, columnDefinition: string): Promise<void> {
@@ -425,14 +496,23 @@ class Database {
       await this.executeSql(`ALTER TABLE ${table} ADD COLUMN ${columnDefinition}`)
     } catch (error) {
       // 列已存在时 SQLite 会报错，这里忽略即可，保证幂等
-      console.log(`列可能已存在，跳过: ${table} ${columnDefinition}`)
     }
+  }
+
+  /**
+   * 重置内部状态标志（清空数据后调用，确保下次 initTables 能重新执行）
+   */
+  resetState(): void {
+    this.tablesInitialized = false
   }
 
   /**
    * 初始化数据库表
    */
   async initTables(): Promise<void> {
+    // 幂等守卫：建表只需执行一次，避免页面 onShow 重复执行
+    if (this.tablesInitialized) return
+    this.tablesInitialized = true
     // #ifdef APP-PLUS
     try {
       // 疫苗接种记录表
@@ -443,6 +523,7 @@ class Database {
           vaccine_name TEXT NOT NULL,
           vaccine_type TEXT NOT NULL,
           dose TEXT,
+          age_months INTEGER,
           scheduled_date INTEGER,
           actual_date INTEGER,
           injection_site TEXT,
@@ -458,7 +539,145 @@ class Database {
         )
       `)
       
-      console.log('数据库表初始化成功')
+      // 宝宝信息表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS baby_info (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          gender INTEGER,
+          birthday TEXT,
+          avatar TEXT,
+          created_at INTEGER,
+          updated_at INTEGER
+        )
+      `)
+
+      // 喂养记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS feeds (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          type TEXT NOT NULL,
+          amount REAL,
+          unit TEXT,
+          left_duration INTEGER,
+          right_duration INTEGER,
+          start_time INTEGER,
+          end_time INTEGER,
+          note TEXT,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 尿布记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS diapers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          type TEXT NOT NULL,
+          has_rash INTEGER,
+          poo_color TEXT,
+          poo_shape TEXT,
+          note TEXT,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 睡眠记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS sleeps (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          start_time INTEGER,
+          end_time INTEGER,
+          duration INTEGER,
+          note TEXT,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 辅食记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS foods (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          food_type TEXT,
+          amount REAL,
+          unit TEXT,
+          note TEXT,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 营养补剂记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS supplements (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          supplement_type TEXT,
+          dosage TEXT,
+          note TEXT,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 成长记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS growth_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          height REAL,
+          weight REAL,
+          head_circumference REAL,
+          note TEXT,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 照片记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS photos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          photo_path TEXT,
+          thumbnail_path TEXT,
+          caption TEXT,
+          month INTEGER,
+          timestamp INTEGER NOT NULL,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+
+      // 提醒记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS reminders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT,
+          title TEXT,
+          content TEXT,
+          reminder_time INTEGER,
+          is_enabled INTEGER,
+          repeat_type TEXT,
+          last_triggered INTEGER,
+          created_at INTEGER
+        )
+      `)
+
+      // 历史数据兼容：为旧版 vaccines 表补充 age_months 列
+      await this.addColumnIfNotExists('vaccines', 'age_months INTEGER')
+
     } catch (error) {
       console.error('初始化数据库表失败', error)
       throw error
@@ -466,17 +685,25 @@ class Database {
     // #endif
     
     // #ifndef APP-PLUS
-    console.log('H5环境：初始化本地存储表结构')
-    // H5环境：确保表存在
-    if (!this.data['vaccines']) {
-      this.data['vaccines'] = []
-    }
-    if (!this.data['baby_info']) {
-      this.data['baby_info'] = []
-    }
+    // H5环境：确保所有表存在
+    const tables = ['baby_info', 'feeds', 'diapers', 'sleeps', 'foods', 'supplements', 'growth_records', 'photos', 'reminders', 'vaccines']
+    tables.forEach(table => {
+      if (!this.data[table]) {
+        this.data[table] = []
+      }
+    })
     this.saveToStorage()
     // #endif
   }
 }
 
 export const db = new Database()
+
+/**
+ * 转义 SQL 字符串值，防止单引号破坏 SQL 或注入。
+ * 仅返回转义后的内部内容（不含外层引号），调用方用 '${escapeSqlValue(x)}' 包裹。
+ */
+export function escapeSqlValue(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return ''
+  return String(value).replace(/'/g, "''")
+}

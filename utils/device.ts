@@ -8,7 +8,7 @@
 export function getDeviceId(): string {
   let deviceId = uni.getStorageSync('device_id')
   if (!deviceId) {
-    deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+    deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).slice(2, 11)
     uni.setStorageSync('device_id', deviceId)
   }
   return deviceId
@@ -34,10 +34,10 @@ export function formatTime(timestamp: number, format: string = 'YYYY-MM-DD HH:mm
   const seconds = String(date.getSeconds()).padStart(2, '0')
   
   return format
-    .replace('YYYY', String(year))
-    .replace('MM', month)
-    .replace('DD', day)
-    .replace('HH', hours)
-    .replace('mm', minutes)
-    .replace('ss', seconds)
+    .replace(/YYYY/g, String(year))
+    .replace(/MM/g, month)
+    .replace(/DD/g, day)
+    .replace(/HH/g, hours)
+    .replace(/mm/g, minutes)
+    .replace(/ss/g, seconds)
 }

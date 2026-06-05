@@ -8,6 +8,25 @@
         <input class="form-input" v-model="babyInfo.name" placeholder="请输入宝宝姓名" />
       </view>
       <view class="form-item">
+        <view class="form-label">性别</view>
+        <view class="gender-selector">
+          <view
+            class="gender-option"
+            :class="{ active: babyInfo.gender === 1 }"
+            @click="babyInfo.gender = 1"
+          >
+            👦 男宝
+          </view>
+          <view
+            class="gender-option"
+            :class="{ active: babyInfo.gender === 0 }"
+            @click="babyInfo.gender = 0"
+          >
+            👧 女宝
+          </view>
+        </view>
+      </view>
+      <view class="form-item">
         <view class="form-label">出生日期</view>
         <picker mode="date" :value="babyInfo.birthday" @change="onBirthdayChange">
           <view class="form-picker">{{ babyInfo.birthday || '选择出生日期' }}</view>
@@ -36,13 +55,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { db } from '@/utils/database'
+import { ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { db, escapeSqlValue } from '@/utils/database'
 import { exportAllData, saveDataToFile } from '@/utils/export'
 import { readDataFromFile, importDataWithDedup } from '@/utils/import'
 
 const babyInfo = ref({
   name: '',
+  gender: 1,
   birthday: ''
 })
 
@@ -51,22 +72,32 @@ const onBirthdayChange = (e: any) => {
 }
 
 const saveBabyInfo = async () => {
+  if (!babyInfo.value.name || !babyInfo.value.name.trim()) {
+    uni.showToast({ title: '请输入宝宝姓名', icon: 'none' })
+    return
+  }
+  if (!babyInfo.value.birthday) {
+    uni.showToast({ title: '请选择出生日期', icon: 'none' })
+    return
+  }
+
   try {
     const existing = await db.selectSql('SELECT id FROM baby_info LIMIT 1')
     
     if (existing && existing.length > 0) {
       await db.executeSql(`
         UPDATE baby_info 
-        SET name = '${babyInfo.value.name}', 
-            birthday = '${babyInfo.value.birthday}',
+        SET name = '${escapeSqlValue(babyInfo.value.name)}', 
+            gender = ${babyInfo.value.gender},
+            birthday = '${escapeSqlValue(babyInfo.value.birthday)}',
             updated_at = ${Date.now()}
         WHERE id = ${existing[0].id}
       `)
     } else {
       const timestamp = Date.now()
       await db.executeSql(`
-        INSERT INTO baby_info (name, birthday, created_at, updated_at)
-        VALUES ('${babyInfo.value.name}', '${babyInfo.value.birthday}', ${timestamp}, ${timestamp})
+        INSERT INTO baby_info (name, gender, birthday, created_at, updated_at)
+        VALUES ('${escapeSqlValue(babyInfo.value.name)}', ${babyInfo.value.gender}, '${escapeSqlValue(babyInfo.value.birthday)}', ${timestamp}, ${timestamp})
       `)
     }
     
@@ -149,6 +180,19 @@ const clearAllData = () => {
           await db.executeSql('DELETE FROM supplements')
           await db.executeSql('DELETE FROM growth_records')
           await db.executeSql('DELETE FROM photos')
+          await db.executeSql('DELETE FROM vaccines')
+          await db.executeSql('DELETE FROM reminders')
+          await db.executeSql('DELETE FROM baby_info')
+          
+          // 重置数据库内部状态，确保下次 initTables 能重新初始化表结构
+          db.resetState()
+          // 清除疫苗排期同步标记，下次进入疫苗页会重新初始化
+          uni.removeStorageSync('vaccine_synced_birthday')
+          
+          // 重置当前页面表单
+          babyInfo.value.name = ''
+          babyInfo.value.gender = 1
+          babyInfo.value.birthday = ''
           
           uni.showToast({ title: '清空成功', icon: 'success' })
         } catch (error) {
@@ -160,12 +204,16 @@ const clearAllData = () => {
   })
 }
 
-onMounted(async () => {
+onShow(async () => {
   try {
+    await db.open()
     const result = await db.selectSql('SELECT * FROM baby_info LIMIT 1')
     if (result && result.length > 0) {
       babyInfo.value.name = result[0].name
       babyInfo.value.birthday = result[0].birthday
+      if (result[0].gender !== null && result[0].gender !== undefined) {
+        babyInfo.value.gender = Number(result[0].gender)
+      }
     }
   } catch (error) {
     console.error('加载宝宝信息失败', error)
@@ -218,6 +266,27 @@ onMounted(async () => {
   border-radius: 8px;
   font-size: 14px;
   color: #333333;
+}
+
+.gender-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.gender-option {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #666666;
+}
+
+.gender-option.active {
+  background: #FFF0F5;
+  border-color: #FF9EC4;
+  color: #FF4D88;
 }
 
 .btn-save {

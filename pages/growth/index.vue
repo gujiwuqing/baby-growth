@@ -243,13 +243,19 @@ const updateChart = () => {
   
   const sortedRecords = [...historyRecords.value].sort((a, b) => a.timestamp - b.timestamp)
   
+  // 先成对过滤出有效记录，保证数据点与 x 轴标签一一对应
+  const validRecords = sortedRecords.filter(r => {
+    const value = activeCurve.value === 'height' ? r.height : r.weight
+    return value > 0
+  })
+  
   chartData.value = {
-    categories: sortedRecords.map(r => formatTime(r.timestamp, 'MM-DD')),
+    categories: validRecords.map(r => formatTime(r.timestamp, 'MM-DD')),
     series: [{
       name: activeCurve.value === 'height' ? '身高' : '体重',
-      data: sortedRecords.map(r => 
+      data: validRecords.map(r => 
         activeCurve.value === 'height' ? r.height : r.weight
-      ).filter(v => v > 0)
+      )
     }]
   }
 }

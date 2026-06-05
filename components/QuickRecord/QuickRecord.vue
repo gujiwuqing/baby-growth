@@ -4,8 +4,8 @@
     <view class="quick-grid">
       <view 
         class="quick-item" 
-        v-for="(item, index) in quickItems" 
-        :key="index"
+        v-for="item in quickItems" 
+        :key="item.type"
         @click="handleClick(item.type)"
       >
         <view class="quick-icon">{{ item.icon }}</view>
@@ -16,9 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const quickItems = ref([
+const quickItems = [
   { type: 'breast', icon: '🤱', label: '母乳' },
   { type: 'formula', icon: '🍼', label: '配方奶' },
   { type: 'bottle', icon: '🍼', label: '瓶喂母乳' },
@@ -27,9 +25,11 @@ const quickItems = ref([
   { type: 'food', icon: '🥣', label: '辅食' },
   { type: 'supplement', icon: '💊', label: '营养补剂' },
   { type: 'growth', icon: '📏', label: '成长指标' }
-])
+]
 
-const emit = defineEmits(['record'])
+const emit = defineEmits<{
+  (event: 'record', type: string): void
+}>()
 
 const handleClick = (type: string) => {
   emit('record', type)
