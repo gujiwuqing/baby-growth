@@ -7,7 +7,6 @@ export default defineConfig({
     uni()
   ],
   build: {
-    // 解决打包警告
     sourcemap: false,
     minify: 'terser',
     terserOptions: {

@@ -47,13 +47,12 @@
           <text class="placeholder-icon">📊</text>
           <text class="placeholder-text">暂无数据，记录宝宝成长吧~</text>
         </view>
-        <qiun-ucharts 
-          v-else
-          type="line" 
-          :opts="chartOpts" 
-          :chartData="chartData" 
-          :canvas2d="true"
-        />
+        <view v-else class="chart-simple">
+          <view class="simple-chart-item" v-for="(item, index) in recentData" :key="index">
+            <text class="chart-label">{{ item.label }}</text>
+            <text class="chart-value">{{ item.value }}</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -118,47 +117,21 @@ const hasData = computed(() => {
   return historyRecords.value.length > 0
 })
 
-// 图表配置
-const chartOpts = ref({
-  color: ['#FF9EC4', '#FFD4E5'],
-  padding: [15, 15, 0, 5],
-  enableScroll: false,
-  legend: {
-    show: false
-  },
-  xAxis: {
-    disableGrid: true,
-    axisLine: false,
-    fontSize: 10,
-    fontColor: '#999999'
-  },
-  yAxis: {
-    gridType: 'dash',
-    dashLength: 4,
-    gridColor: '#F0F0F0',
-    fontSize: 10,
-    fontColor: '#999999'
-  },
-  extra: {
-    line: {
-      type: 'curve',
-      width: 2,
-      activeType: 'hollow'
-    }
-  }
-})
-
-const chartData = ref({
-  categories: [] as string[],
-  series: [{
-    name: '身高',
-    data: [] as number[]
-  }]
+const recentData = computed(() => {
+  if (!hasData.value) return []
+  
+  const sortedRecords = [...historyRecords.value].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5)
+  
+  return sortedRecords.map(record => ({
+    label: record.date,
+    value: activeCurve.value === 'height' 
+      ? `${record.height}cm` 
+      : `${record.weight}kg`
+  }))
 })
 
 const switchCurve = (type: string) => {
   activeCurve.value = type
-  updateChart()
 }
 
 const goToRecord = () => {
@@ -237,29 +210,6 @@ const loadHistory = async () => {
   }
 }
 
-// 更新图表
-const updateChart = () => {
-  if (historyRecords.value.length === 0) return
-  
-  const sortedRecords = [...historyRecords.value].sort((a, b) => a.timestamp - b.timestamp)
-  
-  // 先成对过滤出有效记录，保证数据点与 x 轴标签一一对应
-  const validRecords = sortedRecords.filter(r => {
-    const value = activeCurve.value === 'height' ? r.height : r.weight
-    return value > 0
-  })
-  
-  chartData.value = {
-    categories: validRecords.map(r => formatTime(r.timestamp, 'MM-DD')),
-    series: [{
-      name: activeCurve.value === 'height' ? '身高' : '体重',
-      data: validRecords.map(r => 
-        activeCurve.value === 'height' ? r.height : r.weight
-      )
-    }]
-  }
-}
-
 onShow(async () => {
   try {
     await db.open()
@@ -275,8 +225,6 @@ onShow(async () => {
       loadLatestData(),
       loadHistory()
     ])
-    
-    updateChart()
   } catch (error) {
     console.error('加载数据失败', error)
   }
@@ -421,6 +369,30 @@ onShow(async () => {
 .placeholder-text {
   font-size: 28rpx;
   color: #BBBBBB;
+}
+
+.chart-simple {
+  padding: 20rpx 0;
+}
+
+.simple-chart-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 30rpx;
+  background: #FFF5F7;
+  border-radius: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.chart-label {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.chart-value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #FF9EC4;
 }
 
 /* 记录按钮 */
