@@ -10,60 +10,60 @@
 
 /* 首页图标 */
 .icon-home {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #999999;
-  border-radius: 4px;
+  border-radius: 8rpx;
 }
 
 .icon-home-active {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #FF9EC4;
-  border-radius: 4px;
+  border-radius: 8rpx;
 }
 
 /* 统计图标 */
 .icon-chart {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #999999;
   border-radius: 50%;
 }
 
 .icon-chart-active {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #FF9EC4;
   border-radius: 50%;
 }
 
 /* 相册图标 */
 .icon-album {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #999999;
-  border-radius: 4px;
+  border-radius: 8rpx;
 }
 
 .icon-album-active {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #FF9EC4;
-  border-radius: 4px;
+  border-radius: 8rpx;
 }
 
 /* 设置图标 */
 .icon-settings {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #999999;
   border-radius: 50%;
 }
 
 .icon-settings-active {
-  width: 24px;
-  height: 24px;
+  width: 48rpx;
+  height: 48rpx;
   background: #FF9EC4;
   border-radius: 50%;
 }

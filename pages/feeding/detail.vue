@@ -208,8 +208,8 @@ onLoad((options: any) => {
 .detail-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
-  padding-bottom: 30px;
+  padding: 30rpx;
+  padding-bottom: 60rpx;
 }
 
 /* 日期导航 */
@@ -218,23 +218,23 @@ onLoad((options: any) => {
   align-items: center;
   justify-content: space-between;
   background: #FFFFFF;
-  border-radius: 14px;
-  padding: 10px 16px;
-  margin-bottom: 15px;
+  border-radius: 28rpx;
+  padding: 20rpx 32rpx;
+  margin-bottom: 30rpx;
 }
 
 .date-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .date-arrow {
-  width: 40px;
-  height: 36px;
-  line-height: 32px;
+  width: 80rpx;
+  height: 72rpx;
+  line-height: 64rpx;
   text-align: center;
-  font-size: 26px;
+  font-size: 52rpx;
   color: #FF6BA8;
 }
 
@@ -244,19 +244,19 @@ onLoad((options: any) => {
 
 /* 统计卡片 */
 .day-stats {
-  margin-bottom: 15px;
+  margin-bottom: 30rpx;
 }
 
 .stat-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
 }
 
 .stat-card {
   flex: 1;
-  padding: 16px;
-  border-radius: 14px;
+  padding: 32rpx;
+  border-radius: 28rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -268,45 +268,45 @@ onLoad((options: any) => {
 .stat-card.purple { background: linear-gradient(135deg, #F0E0FF, #F8F0FF); }
 
 .stat-num {
-  font-size: 28px;
+  font-size: 56rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .stat-name {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #999999;
-  margin-top: 4px;
+  margin-top: 8rpx;
 }
 
 /* 时间线 */
 .timeline-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 18px;
+  border-radius: 32rpx;
+  padding: 36rpx;
 }
 
 .timeline-title {
-  font-size: 15px;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333333;
-  margin-bottom: 16px;
+  margin-bottom: 32rpx;
 }
 
 .empty-tip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 0;
+  padding: 80rpx 0;
 }
 
 .empty-icon {
-  font-size: 40px;
-  margin-bottom: 10px;
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
 }
 
 .empty-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #CCCCCC;
 }
 
@@ -317,8 +317,8 @@ onLoad((options: any) => {
 .timeline-item {
   display: flex;
   position: relative;
-  margin-bottom: 16px;
-  padding-left: 24px;
+  margin-bottom: 32rpx;
+  padding-left: 48rpx;
 }
 
 .timeline-item:last-child {
@@ -328,19 +328,19 @@ onLoad((options: any) => {
 .timeline-dot {
   position: absolute;
   left: 0;
-  top: 8px;
-  width: 12px;
-  height: 12px;
+  top: 16rpx;
+  width: 24rpx;
+  height: 24rpx;
   border-radius: 50%;
   z-index: 1;
 }
 
 .timeline-line {
   position: absolute;
-  left: 5px;
-  top: 22px;
-  bottom: -16px;
-  width: 2px;
+  left: 10rpx;
+  top: 44rpx;
+  bottom: -32rpx;
+  width: 4rpx;
   background: #F0F0F0;
 }
 
@@ -351,35 +351,35 @@ onLoad((options: any) => {
 .timeline-card {
   flex: 1;
   background: #FAFAFA;
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 12rpx;
 }
 
 .card-icon {
-  font-size: 16px;
-  margin-right: 6px;
+  font-size: 32rpx;
+  margin-right: 12rpx;
 }
 
 .card-type {
-  font-size: 14px;
+  font-size: 28rpx;
   font-weight: 500;
   color: #333333;
   flex: 1;
 }
 
 .card-time {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #AAAAAA;
 }
 
 .card-detail {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #777777;
 }
 </style>

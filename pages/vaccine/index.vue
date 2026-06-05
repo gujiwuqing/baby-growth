@@ -354,50 +354,50 @@ onShow(async () => {
 .vaccine-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
-  padding-bottom: 20px;
+  padding: 30rpx;
+  padding-bottom: 40rpx;
 }
 
 /* 进度卡片 */
 .progress-card {
   background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 12px rgba(255, 158, 196, 0.3);
+  border-radius: 40rpx;
+  padding: 40rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.3);
 }
 
 .progress-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #FFFFFF;
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
 }
 
 .progress-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: rgba(255, 255, 255, 0.9);
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 24rpx;
 }
 
 .progress-bar {
-  height: 8px;
+  height: 16rpx;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  border-radius: 8rpx;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 16rpx;
 }
 
 .progress-fill {
   height: 100%;
   background: #FFFFFF;
-  border-radius: 4px;
+  border-radius: 8rpx;
   transition: width 0.3s;
 }
 
 .progress-percent {
-  font-size: 12px;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.85);
   display: block;
   text-align: right;
@@ -406,17 +406,17 @@ onShow(async () => {
 /* 即将接种 */
 .upcoming-card {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(255, 158, 196, 0.1);
+  border-radius: 32rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.1);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .upcoming-icon {
-  font-size: 32px;
+  font-size: 64rpx;
 }
 
 .upcoming-info {
@@ -424,22 +424,22 @@ onShow(async () => {
 }
 
 .upcoming-name {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333333;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 8rpx;
 }
 
 .upcoming-date {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #666666;
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 4rpx;
 }
 
 .upcoming-days {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #FF6BA8;
   display: block;
 }
@@ -447,34 +447,34 @@ onShow(async () => {
 /* 接种计划 */
 .plan-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(255, 158, 196, 0.08);
+  border-radius: 32rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 24rpx;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .plan-tabs {
   display: flex;
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .tab {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #999999;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
   background: #F5F5F5;
 }
 
@@ -484,20 +484,20 @@ onShow(async () => {
 }
 
 .plan-scroll {
-  max-height: 500px;
+  max-height: 1000rpx;
 }
 
 .empty-tip {
   text-align: center;
   color: #BBBBBB;
-  font-size: 14px;
-  padding: 40px 20px;
+  font-size: 28rpx;
+  padding: 80rpx 40rpx;
 }
 
 .plan-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: 24rpx 0;
   border-bottom: 1px solid #F8F8F8;
 }
 
@@ -506,22 +506,22 @@ onShow(async () => {
 }
 
 .vaccine-status {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  font-size: 16px;
+  margin-right: 24rpx;
+  font-size: 32rpx;
 }
 
 .status-done {
   background: #34D399;
   color: #FFFFFF;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -530,9 +530,9 @@ onShow(async () => {
 .status-pending {
   background: #FCD34D;
   color: #FFFFFF;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -541,9 +541,9 @@ onShow(async () => {
 .status-missed {
   background: #E5E7EB;
   color: #9CA3AF;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -554,28 +554,28 @@ onShow(async () => {
 }
 
 .vaccine-name {
-  font-size: 14px;
+  font-size: 28rpx;
   font-weight: bold;
   color: #333333;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 8rpx;
 }
 
 .vaccine-age {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #999999;
   display: block;
 }
 
 .vaccine-action {
-  margin-left: 12px;
+  margin-left: 24rpx;
 }
 
 .action-btn {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #FFFFFF;
   background: #FF9EC4;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 12rpx 24rpx;
+  border-radius: 24rpx;
 }
 </style>

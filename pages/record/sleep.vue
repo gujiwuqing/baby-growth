@@ -122,14 +122,14 @@ const handleSave = async () => {
 
 <style scoped>
 .duration-display {
-  padding: 15px;
+  padding: 30rpx;
   background: #FFF5F7;
-  border-radius: 8px;
+  border-radius: 16rpx;
   text-align: center;
 }
 
 .duration-value {
-  font-size: 24px;
+  font-size: 48rpx;
   font-weight: bold;
   color: #FF9EC4;
 }

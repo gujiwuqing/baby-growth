@@ -287,31 +287,31 @@ onShow(async () => {
 .growth-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
-  padding-bottom: 100px;
+  padding: 30rpx;
+  padding-bottom: 200rpx;
 }
 
 /* 最新数据卡片 */
 .latest-card {
   background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 12px rgba(255, 158, 196, 0.3);
+  border-radius: 40rpx;
+  padding: 40rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.3);
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #FFFFFF;
-  margin-bottom: 15px;
+  margin-bottom: 30rpx;
 }
 
 .data-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
 }
 
 .data-item {
@@ -320,77 +320,77 @@ onShow(async () => {
 }
 
 .data-label {
-  font-size: 12px;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 12rpx;
 }
 
 .data-value {
-  font-size: 24px;
+  font-size: 48rpx;
   font-weight: bold;
   color: #FFFFFF;
   display: inline;
 }
 
 .data-unit {
-  font-size: 12px;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
   display: inline;
-  margin-left: 2px;
+  margin-left: 4rpx;
 }
 
 .data-percentile {
   position: absolute;
   top: 0;
   right: 0;
-  font-size: 10px;
+  font-size: 20rpx;
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.3);
-  padding: 2px 6px;
-  border-radius: 8px;
+  padding: 4rpx 12rpx;
+  border-radius: 16rpx;
 }
 
 .data-date {
-  font-size: 12px;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.85);
   display: block;
   text-align: center;
-  margin-top: 10px;
+  margin-top: 20rpx;
 }
 
 /* 成长曲线 */
 .curve-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(255, 158, 196, 0.08);
+  border-radius: 32rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 24rpx;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .curve-tabs {
   display: flex;
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .tab {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #999999;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
   background: #F5F5F5;
 }
 
@@ -401,7 +401,7 @@ onShow(async () => {
 
 .chart-container {
   width: 100%;
-  height: 200px;
+  height: 400rpx;
   position: relative;
 }
 
@@ -414,38 +414,38 @@ onShow(async () => {
 }
 
 .placeholder-icon {
-  font-size: 48px;
-  margin-bottom: 10px;
+  font-size: 96rpx;
+  margin-bottom: 20rpx;
 }
 
 .placeholder-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #BBBBBB;
 }
 
 /* 记录按钮 */
 .record-btn {
   position: fixed;
-  bottom: 80px;
+  bottom: 160rpx;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
-  border-radius: 25px;
-  padding: 5px 30px;
+  border-radius: 50rpx;
+  padding: 10rpx 60rpx;
   border: none;
-  box-shadow: 0 4px 12px rgba(255, 158, 196, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.4);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16rpx;
   z-index: 10;
 }
 
 .btn-icon {
-  font-size: 18px;
+  font-size: 36rpx;
 }
 
 .btn-text {
-  font-size: 12px;
+  font-size: 24rpx;
   font-weight: bold;
   color: #FFFFFF;
 }
@@ -453,24 +453,24 @@ onShow(async () => {
 /* 历史记录 */
 .history-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(255, 158, 196, 0.08);
+  border-radius: 32rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
 }
 
 .history-scroll {
-  max-height: 400px;
+  max-height: 800rpx;
 }
 
 .empty-tip {
   text-align: center;
   color: #BBBBBB;
-  font-size: 14px;
-  padding: 40px 20px;
+  font-size: 28rpx;
+  padding: 80rpx 40rpx;
 }
 
 .history-item {
-  padding: 12px 0;
+  padding: 24rpx 0;
   border-bottom: 1px solid #F8F8F8;
 }
 
@@ -482,31 +482,31 @@ onShow(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 16rpx;
 }
 
 .date-text {
-  font-size: 14px;
+  font-size: 28rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .age-text {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #FF9EC4;
   background: #FFF0F5;
-  padding: 2px 8px;
-  border-radius: 8px;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
 }
 
 .history-data {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .data-text {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #666666;
 }
 </style>

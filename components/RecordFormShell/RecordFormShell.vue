@@ -36,95 +36,95 @@ const onCancel = () => emit('cancel')
 .record-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
-  padding-bottom: 30px;
+  padding: 30rpx;
+  padding-bottom: 60rpx;
 }
 
 .form-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 32rpx;
+  padding: 40rpx;
 }
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 20rpx;
+  margin-top: 40rpx;
 }
 
 .btn-cancel {
   flex: 1;
-  padding: 10px 0;
+  padding: 20rpx 0;
   border: 1px solid #E5E5E5;
-  border-radius: 20px;
+  border-radius: 40rpx;
   background: #FFFFFF;
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666666;
 }
 
 .btn-save {
   flex: 1;
-  padding: 10px 0;
-  border-radius: 20px;
+  padding: 20rpx 0;
+  border-radius: 40rpx;
   background: #FF9EC4;
-  font-size: 14px;
+  font-size: 28rpx;
   color: #FFFFFF;
 }
 
 /* 使用 :deep() 穿透选择器，确保样式应用到 slot 内容 */
 .record-page :deep(.form-item) {
-  margin-bottom: 20px;
+  margin-bottom: 40rpx;
 }
 
 .record-page :deep(.form-label) {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666666;
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
   display: block;
 }
 
 .record-page :deep(.form-picker) {
-  padding: 12px;
+  padding: 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   color: #333333;
 }
 
 .record-page :deep(.form-input) {
   width: 100%;
-  padding: 12px;
+  padding: 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   box-sizing: border-box;
 }
 
 .record-page :deep(.form-textarea) {
   width: 100%;
-  padding: 12px;
+  padding: 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
-  min-height: 80px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  min-height: 160rpx;
   box-sizing: border-box;
 }
 
 /* 通用选项按钮组（类型/状态等多选一） */
 .record-page :deep(.option-row) {
   display: flex;
-  gap: 10px;
+  gap: 20rpx;
   flex-wrap: wrap;
 }
 
 .record-page :deep(.option-item) {
   flex: 1;
-  min-width: 80px;
+  min-width: 160rpx;
   text-align: center;
-  padding: 12px 0;
+  padding: 24rpx 0;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   color: #666666;
 }
 

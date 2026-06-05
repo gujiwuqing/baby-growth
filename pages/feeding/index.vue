@@ -166,23 +166,23 @@ onShow(() => {
 .feeding-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
-  padding-bottom: 30px;
+  padding: 30rpx;
+  padding-bottom: 60rpx;
 }
 
 /* 月汇总 */
 .month-summary {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 18px;
-  margin-top: 15px;
+  border-radius: 32rpx;
+  padding: 36rpx;
+  margin-top: 30rpx;
 }
 
 .summary-title {
-  font-size: 15px;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333333;
-  margin-bottom: 14px;
+  margin-bottom: 28rpx;
 }
 
 .summary-grid {
@@ -197,41 +197,41 @@ onShow(() => {
 }
 
 .summary-value {
-  font-size: 22px;
+  font-size: 44rpx;
   font-weight: bold;
   color: #FF6BA8;
 }
 
 .summary-label {
-  font-size: 11px;
+  font-size: 22rpx;
   color: #999999;
-  margin-top: 4px;
+  margin-top: 8rpx;
 }
 
 .summary-row {
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 28rpx;
+  padding-top: 24rpx;
   border-top: 1px solid #FFF0F5;
   text-align: center;
 }
 
 .summary-avg {
-  font-size: 12px;
+  font-size: 24rpx;
   color: #AAAAAA;
 }
 
 /* 快速记录 */
 .quick-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 15px;
+  gap: 24rpx;
+  margin-top: 30rpx;
 }
 
 .action-btn {
   flex: 1;
-  padding: 14px 0;
-  border-radius: 14px;
-  font-size: 15px;
+  padding: 28rpx 0;
+  border-radius: 28rpx;
+  font-size: 30rpx;
   font-weight: 500;
   text-align: center;
   border: none;

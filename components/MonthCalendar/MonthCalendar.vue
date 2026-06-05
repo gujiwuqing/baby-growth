@@ -154,29 +154,29 @@ const onSelectDay = (cell: CalendarCell) => {
 <style scoped>
 .calendar {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 32rpx;
+  padding: 24rpx;
 }
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
 }
 
 .calendar-title {
-  font-size: 17px;
+  font-size: 34rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .nav-btn {
-  width: 40px;
-  height: 40px;
-  line-height: 36px;
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 72rpx;
   text-align: center;
-  font-size: 26px;
+  font-size: 52rpx;
   color: #FF6BA8;
   border-radius: 50%;
 }
@@ -187,15 +187,15 @@ const onSelectDay = (cell: CalendarCell) => {
 
 .weekday-row {
   display: flex;
-  margin-bottom: 4px;
-  padding-bottom: 6px;
+  margin-bottom: 8rpx;
+  padding-bottom: 12rpx;
   border-bottom: 1px solid #FFF0F5;
 }
 
 .weekday {
   flex: 1;
   text-align: center;
-  font-size: 12px;
+  font-size: 24rpx;
   color: #AAAAAA;
   font-weight: 500;
 }
@@ -207,13 +207,13 @@ const onSelectDay = (cell: CalendarCell) => {
 
 .day-cell {
   width: 14.28%;
-  min-height: 58px;
+  min-height: 116rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4px 0 2px;
+  padding: 8rpx 0 4rpx;
   position: relative;
-  border-radius: 8px;
+  border-radius: 16rpx;
 }
 
 .day-cell:active {
@@ -221,7 +221,7 @@ const onSelectDay = (cell: CalendarCell) => {
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #333333;
   font-weight: 500;
 }
@@ -262,19 +262,19 @@ const onSelectDay = (cell: CalendarCell) => {
 }
 
 .mini-feed {
-  font-size: 9px;
+  font-size: 18rpx;
   color: #FF9EC4;
   line-height: 1.2;
 }
 
 .mini-milk {
-  font-size: 8px;
+  font-size: 16rpx;
   color: #BBBBBB;
   line-height: 1.2;
 }
 
 .mini-food {
-  font-size: 9px;
+  font-size: 18rpx;
   line-height: 1.2;
 }
 

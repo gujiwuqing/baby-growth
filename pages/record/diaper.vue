@@ -130,16 +130,16 @@ const handleSave = () => {
 .color-grid {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 16rpx;
+  padding: 8rpx 0;
 }
 
 .color-option {
   display: inline-block;
-  padding: 8px 14px;
+  padding: 16rpx 28rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 20px;
-  font-size: 13px;
+  border-radius: 40rpx;
+  font-size: 26rpx;
   color: #666666;
   background: #FFFFFF;
 }
@@ -153,20 +153,20 @@ const handleSave = () => {
 /* 形状选择器 */
 .shape-scroll {
   width: 100%;
-  max-height: 200px;
+  max-height: 400rpx;
 }
 
 .shape-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 16rpx;
 }
 
 .shape-option {
-  padding: 8px 14px;
+  padding: 16rpx 28rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 20px;
-  font-size: 13px;
+  border-radius: 40rpx;
+  font-size: 26rpx;
   color: #666666;
   background: #FFFFFF;
 }

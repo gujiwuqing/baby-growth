@@ -39,40 +39,40 @@ const handleClick = (type: string) => {
 <style scoped>
 .quick-record {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
-  margin: 15px;
+  border-radius: 32rpx;
+  padding: 40rpx;
+  margin: 30rpx;
 }
 
 .quick-title {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333333;
-  margin-bottom: 15px;
+  margin-bottom: 30rpx;
 }
 
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .quick-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
+  padding: 24rpx 0;
   background: #FFF5F7;
-  border-radius: 12px;
+  border-radius: 24rpx;
 }
 
 .quick-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
+  font-size: 56rpx;
+  margin-bottom: 12rpx;
 }
 
 .quick-label {
-  font-size: 13px;
+  font-size: 26rpx;
   color: #666666;
 }
 </style>

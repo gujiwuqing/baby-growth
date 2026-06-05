@@ -342,7 +342,7 @@ onMounted(async () => {
 .feeding-page {
   min-height: 100vh;
   background: #FFF5F7;
-  padding: 15px;
+  padding: 30rpx;
 }
 
 .manual-area {
@@ -352,18 +352,18 @@ onMounted(async () => {
 
 .form-section {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 32rpx;
+  padding: 40rpx;
   position: relative;
   z-index: 1;
 }
 
 .note-section {
-  margin-top: 15px;
+  margin-top: 30rpx;
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: 40rpx;
   position: relative;
   z-index: 1;
 }
@@ -373,9 +373,9 @@ onMounted(async () => {
 }
 
 .form-label {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666666;
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
 }
 
 /* 输入框容器 - 确保可交互 */
@@ -386,31 +386,31 @@ onMounted(async () => {
 
 .form-input {
   width: 100%;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 12px;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   background: #FFFFFF;
   box-sizing: border-box;
 }
 
 .form-picker {
-  padding: 12px;
+  padding: 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   color: #333333;
 }
 
 .form-textarea {
   width: 100%;
-  padding: 12px;
+  padding: 24rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
-  min-height: 80px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  min-height: 160rpx;
   box-sizing: border-box;
 }
 
@@ -418,19 +418,19 @@ onMounted(async () => {
 .mode-switch {
   display: flex;
   background: #FFFFFF;
-  border-radius: 25px;
-  padding: 4px;
-  margin: 0 auto 20px;
-  width: 220px;
+  border-radius: 50rpx;
+  padding: 8rpx;
+  margin: 0 auto 40rpx;
+  width: 440rpx;
 }
 
 .mode-tab {
   flex: 1;
   text-align: center;
-  padding: 8px 0;
-  font-size: 14px;
+  padding: 16rpx 0;
+  font-size: 28rpx;
   color: #999999;
-  border-radius: 22px;
+  border-radius: 44rpx;
 }
 
 .mode-tab.active {
@@ -442,18 +442,18 @@ onMounted(async () => {
 /* ===== 计时区 ===== */
 .timer-area {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 30px 20px;
+  border-radius: 32rpx;
+  padding: 60rpx 40rpx;
 }
 
 .last-tip {
   text-align: center;
-  font-size: 13px;
+  font-size: 26rpx;
   color: #FF9EC4;
   background: #FFEEF4;
-  border-radius: 20px;
-  padding: 6px 0;
-  margin-bottom: 30px;
+  border-radius: 40rpx;
+  padding: 12rpx 0;
+  margin-bottom: 60rpx;
 }
 
 .timer-circles {
@@ -468,15 +468,15 @@ onMounted(async () => {
 }
 
 .timer-circle {
-  width: 120px;
-  height: 120px;
+  width: 240rpx;
+  height: 240rpx;
   border-radius: 50%;
   background: radial-gradient(circle, #FFF5F7 0%, #FFE0EC 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(255, 158, 196, 0.25);
+  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.25);
 }
 
 .timer-circle.running {
@@ -484,10 +484,10 @@ onMounted(async () => {
 }
 
 .side-label {
-  font-size: 16px;
+  font-size: 32rpx;
   font-weight: bold;
   color: #FF9EC4;
-  margin-bottom: 6px;
+  margin-bottom: 12rpx;
 }
 
 .timer-circle.running .side-label {
@@ -495,7 +495,7 @@ onMounted(async () => {
 }
 
 .side-icon {
-  font-size: 32px;
+  font-size: 64rpx;
   color: #FF6BA8;
 }
 
@@ -504,31 +504,31 @@ onMounted(async () => {
 }
 
 .side-time {
-  margin-top: 12px;
-  font-size: 18px;
+  margin-top: 24rpx;
+  font-size: 36rpx;
   font-weight: bold;
   color: #333333;
 }
 
 .timer-total {
   text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
+  margin-top: 48rpx;
+  font-size: 28rpx;
   color: #666666;
 }
 
 /* ===== 奶瓶刻度卡片 ===== */
 .bottle-card {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 15px;
+  border-radius: 32rpx;
+  padding: 40rpx;
+  margin-top: 30rpx;
 }
 
 .bottle-card-title {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666666;
-  margin-bottom: 15px;
+  margin-bottom: 30rpx;
 }
 
 .bottle-visual {
@@ -538,33 +538,33 @@ onMounted(async () => {
 }
 
 .bottle-cap {
-  width: 60px;
-  height: 18px;
+  width: 120rpx;
+  height: 36rpx;
   background: #FF9EC4;
-  border-radius: 12px 12px 4px 4px;
+  border-radius: 24rpx 24rpx 8rpx 8rpx;
 }
 
 .bottle-body {
-  width: 180px;
+  width: 360rpx;
   background: linear-gradient(180deg, #FFF5F7 0%, #FFE0EC 100%);
-  border-radius: 0 0 40px 40px;
-  border: 2px solid #FFD0E2;
+  border-radius: 0 0 80rpx 80rpx;
+  border: 4rpx solid #FFD0E2;
   border-top: none;
-  padding: 24px 12px 30px;
+  padding: 48rpx 24rpx 60rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .amount-display {
-  font-size: 40px;
+  font-size: 80rpx;
   font-weight: bold;
   color: #FF6BA8;
-  margin-bottom: 16px;
+  margin-bottom: 32rpx;
 }
 
 .amount-unit {
-  font-size: 18px;
+  font-size: 36rpx;
   color: #FF9EC4;
 }
 
@@ -572,16 +572,16 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 16rpx;
 }
 
 .quick-amount {
-  width: 44px;
+  width: 88rpx;
   text-align: center;
-  padding: 6px 0;
+  padding: 12rpx 0;
   background: #FFFFFF;
-  border-radius: 16px;
-  font-size: 13px;
+  border-radius: 32rpx;
+  font-size: 26rpx;
   color: #FF9EC4;
   border: 1px solid #FFD0E2;
 }
@@ -595,51 +595,51 @@ onMounted(async () => {
 .amount-stepper {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 24rpx;
+  margin-top: 40rpx;
 }
 
 .stepper-btn {
-  width: 50px;
+  width: 100rpx;
   text-align: center;
-  padding: 10px 0;
+  padding: 20rpx 0;
   background: #FFEEF4;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   color: #FF6BA8;
 }
 
 .stepper-input {
   flex: 1;
-  padding: 10px;
+  padding: 20rpx;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 16rpx;
+  font-size: 28rpx;
   text-align: center;
 }
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 20rpx;
+  margin-top: 40rpx;
 }
 
 .btn-cancel {
   flex: 1;
-  padding: 10px 0;
+  padding: 20rpx 0;
   border: 1px solid #E5E5E5;
-  border-radius: 20px;
+  border-radius: 40rpx;
   background: #FFFFFF;
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666666;
 }
 
 .btn-save {
   flex: 1;
-  padding: 10px 0;
-  border-radius: 20px;
+  padding: 20rpx 0;
+  border-radius: 40rpx;
   background: #FF9EC4;
-  font-size: 14px;
+  font-size: 28rpx;
   color: #FFFFFF;
 }
 </style>
