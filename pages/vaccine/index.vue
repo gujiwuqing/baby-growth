@@ -126,34 +126,33 @@ const showVaccineDetail = (vaccine: any) => {
   })
 }
 
-const recordVaccine = async (vaccine: any) => {
+const recordVaccine = (vaccine: any) => {
   // 获取疫苗详细信息
-  const allVaccines = [...FREE_VACCINES, ...PAID_VACCINES]
-  const vaccineInfo = allVaccines.find(v => 
+  const allVaccineList = [...FREE_VACCINES, ...PAID_VACCINES]
+  const vaccineInfo = allVaccineList.find(v => 
     `${v.name}${v.dose}` === vaccine.name || v.name === vaccine.name
   )
   
-  const [err, res]: any = await uni.showModal({
+  uni.showModal({
     title: '确认接种',
-    content: `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`
+    content: `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`,
+    success(res) {
+      if (!res.confirm) return
+      db.executeSql(`
+        UPDATE vaccines 
+        SET status = 'done', 
+            actual_date = ${Date.now()},
+            injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
+        WHERE id = ${vaccine.id}
+      `).then(() => {
+        uni.showToast({ title: '记录成功', icon: 'success' })
+        loadVaccines()
+      }).catch((error) => {
+        console.error('记录失败', error)
+        uni.showToast({ title: '记录失败', icon: 'none' })
+      })
+    }
   })
-  if (err || !res.confirm) return
-  
-  try {
-    // 更新接种状态
-    await db.executeSql(`
-      UPDATE vaccines 
-      SET status = 'done', 
-          actual_date = ${Date.now()},
-          injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
-      WHERE id = ${vaccine.id}
-    `)
-    uni.showToast({ title: '记录成功', icon: 'success' })
-    await loadVaccines()
-  } catch (error) {
-    console.error('记录失败', error)
-    uni.showToast({ title: '记录失败', icon: 'none' })
-  }
 }
 
 const babyBirthday = ref('')
