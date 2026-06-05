@@ -74,6 +74,7 @@ import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { db, escapeSqlValue } from '@/utils/database'
 import { formatTime, getDeviceId } from '@/utils/device'
+import { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } from '@/utils/vaccineData'
 
 const activeTab = ref('free')
 const allVaccines = ref<any[]>([])
@@ -127,26 +128,25 @@ const showVaccineDetail = (vaccine: any) => {
 
 const recordVaccine = (vaccine: any) => {
   // 获取疫苗详细信息
-  import('@/utils/vaccineData').then(({ FREE_VACCINES, PAID_VACCINES }) => {
-    const allVaccines = [...FREE_VACCINES, ...PAID_VACCINES]
-    const vaccineInfo = allVaccines.find(v => 
-      `${v.name}${v.dose}` === vaccine.name || v.name === vaccine.name
-    )
-    
-    uni.showModal({
-      title: '确认接种',
-      content: `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            // 更新接种状态
-            await db.executeSql(`
-              UPDATE vaccines 
-              SET status = 'done', 
-                  actual_date = ${Date.now()},
-                  injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
-              WHERE id = ${vaccine.id}
-            `)
+  const allVaccines = [...FREE_VACCINES, ...PAID_VACCINES]
+  const vaccineInfo = allVaccines.find(v => 
+    `${v.name}${v.dose}` === vaccine.name || v.name === vaccine.name
+  )
+  
+  uni.showModal({
+    title: '确认接种',
+    content: `确认已接种 ${vaccine.name}？\n\n接种部位：${vaccineInfo?.injectionSite?.join('/') || '请选择'}\n预防疾病：${vaccineInfo?.diseases || ''}`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          // 更新接种状态
+          await db.executeSql(`
+            UPDATE vaccines 
+            SET status = 'done', 
+                actual_date = ${Date.now()},
+                injection_site = '${escapeSqlValue(vaccineInfo?.injectionSite?.[0] || '')}'
+            WHERE id = ${vaccine.id}
+          `)
             
             uni.showToast({ title: '记录成功', icon: 'success' })
             await loadVaccines()
@@ -157,7 +157,6 @@ const recordVaccine = (vaccine: any) => {
         }
       }
     })
-  })
 }
 
 const babyBirthday = ref('')
@@ -245,7 +244,6 @@ const resolveAgeMonths = async (row: any): Promise<number | null> => {
   }
   // 旧数据无 age_months：从静态疫苗数据按 vaccine_name 精确匹配
   if (!_vaccineDataCache) {
-    const { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } = await import('@/utils/vaccineData')
     _vaccineDataCache = { vaccines: [...FREE_VACCINES, ...PAID_VACCINES], getVaccineFullName }
   }
   if (row.vaccine_name) {
@@ -263,9 +261,6 @@ const initDefaultVaccines = async () => {
   isInitializing = true
 
   try {
-    // 从疫苗数据文件导入完整数据
-    const { FREE_VACCINES, PAID_VACCINES, getVaccineFullName } = await import('@/utils/vaccineData')
-    
     const vaccineList = [...FREE_VACCINES, ...PAID_VACCINES]
     
     // 必须先有宝宝生日才能正确计算接种排期
