@@ -9,6 +9,30 @@
       }
     },
     {
+      "path": "pages/feeding/index",
+      "style": {
+        "navigationBarTitleText": "喂养记录",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/growth/index",
+      "style": {
+        "navigationBarTitleText": "身高体重",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/vaccine/index",
+      "style": {
+        "navigationBarTitleText": "疫苗接种",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/record/feeding",
       "style": {
         "navigationBarTitleText": "喂奶记录",
@@ -57,30 +81,6 @@
       }
     },
     {
-      "path": "pages/statistics/index",
-      "style": {
-        "navigationBarTitleText": "统计分析",
-        "navigationBarBackgroundColor": "#FF9EC4",
-        "navigationBarTextStyle": "white"
-      }
-    },
-    {
-      "path": "pages/album/index",
-      "style": {
-        "navigationBarTitleText": "成长相册",
-        "navigationBarBackgroundColor": "#FF9EC4",
-        "navigationBarTextStyle": "white"
-      }
-    },
-    {
-      "path": "pages/reminder/index",
-      "style": {
-        "navigationBarTitleText": "提醒管理",
-        "navigationBarBackgroundColor": "#FF9EC4",
-        "navigationBarTextStyle": "white"
-      }
-    },
-    {
       "path": "pages/settings/index",
       "style": {
         "navigationBarTitleText": "设置",
@@ -104,26 +104,26 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "static/images/tabbar/home.svg",
-        "selectedIconPath": "static/images/tabbar/home-active.svg"
+        "iconPath": "static/images/tabbar/home.png",
+        "selectedIconPath": "static/images/tabbar/home-active.png"
       },
       {
-        "pagePath": "pages/statistics/index",
-        "text": "统计",
-        "iconPath": "static/images/tabbar/chart.svg",
-        "selectedIconPath": "static/images/tabbar/chart-active.svg"
+        "pagePath": "pages/growth/index",
+        "text": "身高体重",
+        "iconPath": "static/images/tabbar/growth.png",
+        "selectedIconPath": "static/images/tabbar/growth-active.png"
       },
       {
-        "pagePath": "pages/album/index",
-        "text": "相册",
-        "iconPath": "static/images/tabbar/album.svg",
-        "selectedIconPath": "static/images/tabbar/album-active.svg"
+        "pagePath": "pages/vaccine/index",
+        "text": "疫苗接种",
+        "iconPath": "static/images/tabbar/vaccine.png",
+        "selectedIconPath": "static/images/tabbar/vaccine-active.png"
       },
       {
         "pagePath": "pages/settings/index",
         "text": "设置",
-        "iconPath": "static/images/tabbar/settings.svg",
-        "selectedIconPath": "static/images/tabbar/settings-active.svg"
+        "iconPath": "static/images/tabbar/settings.png",
+        "selectedIconPath": "static/images/tabbar/settings-active.png"
       }
     ]
   }

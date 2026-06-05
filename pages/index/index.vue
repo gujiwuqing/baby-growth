@@ -1,62 +1,39 @@
 <template>
-  <view class="index-page">
-    <!-- 筛选栏 -->
-    <view class="filter-bar">
-      <view class="filter-type" @click="showTypeFilter = !showTypeFilter">
-        <text>{{ currentTypeLabel }}</text>
-        <text class="filter-arrow">{{ showTypeFilter ? '▲' : '▼' }}</text>
-      </view>
-      <view class="filter-date" @click="resetDate" v-if="filterDate">
-        {{ filterDate }} ✕
-      </view>
-      <picker mode="date" :value="filterDate" @change="onDateChange" v-else>
-        <view class="filter-date">筛选日期</view>
-      </picker>
-    </view>
-
-    <!-- 类型下拉 -->
-    <view class="type-dropdown" v-if="showTypeFilter">
-      <view
-        class="dropdown-item"
-        v-for="opt in typeOptions"
-        :key="opt.value"
-        :class="{ active: filterType === opt.value }"
-        @click="selectType(opt.value)"
-      >{{ opt.label }}</view>
-    </view>
-
-    <!-- 时间轴（按天分组） -->
-    <scroll-view scroll-y class="timeline-scroll">
-      <view v-if="groupedRecords.length === 0" class="empty-tip">暂无记录，点击下方快捷记录开始吧～</view>
-
-      <view class="day-group" v-for="group in groupedRecords" :key="group.dateKey">
-        <view class="day-header">
-          <text class="day-label">{{ group.dayLabel }}</text>
-          <text class="day-sub">{{ group.babyDay }}</text>
+  <view class="home-page">
+    <!-- 喂养记录入口 -->
+    <view class="feeding-entry" @click="goToFeeding">
+      <view class="entry-icon">🍼</view>
+      <view class="entry-content">
+        <view class="entry-title">喂养记录</view>
+        <view class="entry-stats">
+          <text class="stat-text">今日 {{ todayStats.feeding }} 次</text>
+          <text class="stat-divider">|</text>
+          <text class="stat-text">总奶量 {{ todayStats.totalMilk }}ml</text>
         </view>
+      </view>
+      <view class="entry-arrow">→</view>
+    </view>
 
-        <view class="day-card">
-          <!-- 当日汇总 -->
-          <view class="day-summary">{{ group.summary }}</view>
-
-          <!-- 记录项 -->
-          <view class="timeline">
-            <view class="timeline-item" v-for="record in group.items" :key="record.id">
-              <view class="timeline-time">{{ record.time }}</view>
-              <view class="timeline-dot" :style="{ background: record.color }"></view>
-              <view class="timeline-content">
-                <view class="timeline-row">
-                  <text class="timeline-icon">{{ record.icon }}</text>
-                  <text class="timeline-type">{{ record.label }}</text>
-                  <text class="timeline-detail">{{ record.detail }}</text>
-                </view>
-                <view class="timeline-ago" v-if="record.ago">{{ record.ago }}</view>
-              </view>
+    <!-- 今日时间轴 -->
+    <view class="today-section">
+      <view class="section-title">今日记录</view>
+      <scroll-view class="today-scroll" scroll-y>
+        <view class="empty-tip" v-if="todayRecords.length === 0">
+          今天还没有记录，快来记录宝宝的成长吧~
+        </view>
+        <view v-for="record in todayRecords" :key="record.id" class="timeline-item">
+          <text class="timeline-time">{{ record.time }}</text>
+          <view class="timeline-dot" :style="{ background: record.color }"></view>
+          <view class="timeline-content">
+            <view class="timeline-row">
+              <text class="timeline-icon">{{ record.icon }}</text>
+              <text class="timeline-type">{{ record.label }}</text>
+              <text class="timeline-detail">{{ record.detail }}</text>
             </view>
           </view>
         </view>
-      </view>
-    </scroll-view>
+      </scroll-view>
+    </view>
 
     <!-- 快捷记录 -->
     <QuickRecord @record="handleRecord" />
@@ -64,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
 import { db } from '@/utils/database'
@@ -77,53 +54,20 @@ interface RecordItem {
   icon: string
   color: string
   detail: string
-  ago: string
   time: string
   timestamp: number
 }
 
-const babyInfo = ref({
-  name: '',
-  avatar: '',
-  birthday: ''
+// 今日统计
+const todayStats = ref({
+  feeding: 0,
+  totalMilk: 0
 })
 
-// ===== 筛选 =====
-const showTypeFilter = ref(false)
-const filterType = ref('all')
-const filterDate = ref('')
+// 今日记录
+const todayRecords = ref<RecordItem[]>([])
 
-const typeOptions = [
-  { value: 'all', label: '全部' },
-  { value: 'breast', label: '母乳' },
-  { value: 'formula', label: '配方奶' },
-  { value: 'bottle', label: '瓶喂母乳' },
-  { value: 'diaper', label: '换尿布' },
-  { value: 'sleep', label: '睡眠' },
-  { value: 'food', label: '辅食' },
-  { value: 'supplement', label: '营养补剂' },
-  { value: 'growth', label: '成长指标' }
-]
-
-const currentTypeLabel = computed(() => {
-  const opt = typeOptions.find((o) => o.value === filterType.value)
-  return opt ? opt.label : '全部'
-})
-
-const selectType = (value: string) => {
-  filterType.value = value
-  showTypeFilter.value = false
-}
-
-const onDateChange = (e: any) => {
-  filterDate.value = e.detail.value
-}
-
-const resetDate = () => {
-  filterDate.value = ''
-}
-
-// ===== 元信息 =====
+// 类型元信息
 const typeMeta: Record<string, { label: string; icon: string; color: string }> = {
   breast: { label: '母乳', icon: '🤱', color: '#FF6BA8' },
   formula: { label: '配方奶', icon: '🍼', color: '#FFA94D' },
@@ -135,25 +79,12 @@ const typeMeta: Record<string, { label: string; icon: string; color: string }> =
   growth: { label: '成长指标', icon: '📏', color: '#3B82F6' }
 }
 
-const allRecords = ref<RecordItem[]>([])
-
-const formatAgo = (timestamp: number): string => {
-  const diff = Date.now() - timestamp
-  if (diff < 0) return ''
-  const minutes = Math.floor(diff / (1000 * 60))
-  if (minutes < 1) return '刚刚'
-  if (minutes < 60) return `${minutes}分钟前`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}小时${minutes % 60}分钟前`
-  return ''
-}
-
 const formatMin = (seconds: number): string => {
   const m = Math.floor(seconds / 60)
   return `${m}min`
 }
 
-// 母乳详情：右14分钟 08:24-08:38
+// 母乳详情
 const buildBreastDetail = (r: any): string => {
   const left = r.left_duration || 0
   const right = r.right_duration || 0
@@ -162,16 +93,73 @@ const buildBreastDetail = (r: any): string => {
   if (right > 0) parts.push(`右${formatMin(right)}`)
   let detail = parts.join(' ') || `${formatMin(left + right)}`
   if (r.start_time && r.end_time) {
-    detail += `\n${formatTime(r.start_time, 'HH:mm')}-${formatTime(r.end_time, 'HH:mm')}`
+    detail += ` ${formatTime(r.start_time, 'HH:mm')}-${formatTime(r.end_time, 'HH:mm')}`
   }
   return detail
 }
 
-const loadRecords = async () => {
-  const records: RecordItem[] = []
+// 加载今日数据
+const loadTodayData = async () => {
+  const today = new Date()
+  const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+  const endTime = startTime + 24 * 60 * 60 * 1000
+  
+  // 今日喂养统计
+  const feeds = await db.selectSql(`
+    SELECT COUNT(*) as count, SUM(amount) as total
+    FROM feeds 
+    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
+  `)
+  
+  if (feeds && feeds.length > 0) {
+    todayStats.value.feeding = feeds[0].count
+    todayStats.value.totalMilk = feeds[0].total || 0
+  }
+}
 
+// 加载最新成长数据
+const loadLatestGrowth = async () => {
+  // 暂时保留，但不展示
+  const result = await db.selectSql(`
+    SELECT * FROM growth_records 
+    ORDER BY timestamp DESC LIMIT 1
+  `)
+}
+
+// 加载疫苗进度
+const loadVaccineProgress = async () => {
+  const total = await db.selectSql('SELECT COUNT(*) as count FROM vaccines')
+  const done = await db.selectSql(`
+    SELECT COUNT(*) as count FROM vaccines WHERE status = 'done'
+  `)
+  
+  vaccineProgress.value = {
+    total: total && total.length > 0 ? total[0].count : 0,
+    done: done && done.length > 0 ? done[0].count : 0
+  }
+}
+
+// 加载照片数量
+const loadPhotoCount = async () => {
+  const result = await db.selectSql('SELECT COUNT(*) as count FROM photos')
+  if (result && result.length > 0) {
+    photoCount.value = result[0].count
+  }
+}
+
+// 加载今日记录时间轴
+const loadTodayRecords = async () => {
+  const records: RecordItem[] = []
+  const today = new Date()
+  const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+  const endTime = startTime + 24 * 60 * 60 * 1000
+  
   // 喂养记录
-  const feeds = await db.selectSql('SELECT * FROM feeds ORDER BY timestamp DESC')
+  const feeds = await db.selectSql(`
+    SELECT * FROM feeds 
+    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
+    ORDER BY timestamp DESC
+  `)
   if (feeds && feeds.length > 0) {
     feeds.forEach((r: any) => {
       const meta = typeMeta[r.type] || typeMeta.formula
@@ -188,35 +176,26 @@ const loadRecords = async () => {
         icon: meta.icon,
         color: meta.color,
         detail,
-        ago: formatAgo(r.timestamp),
         time: formatTime(r.timestamp, 'HH:mm'),
         timestamp: r.timestamp
       })
     })
   }
-
+  
   // 换尿布
-  const diapers = await db.selectSql('SELECT * FROM diapers ORDER BY timestamp DESC')
+  const diapers = await db.selectSql(`
+    SELECT * FROM diapers 
+    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
+    ORDER BY timestamp DESC
+  `)
   if (diapers && diapers.length > 0) {
     const diaperLabels: Record<string, string> = { pee: '小便', poo: '大便', both: '混合' }
     diapers.forEach((r: any) => {
       const meta = typeMeta.diaper
       let detail = diaperLabels[r.type] || ''
-      
-      // 显示红屁屁状态
-      if (r.has_rash === 1) {
-        detail += '，🔴有红屁屁'
-      }
-      
-      // 显示大便颜色和形状
-      if ((r.type === 'poo' || r.type === 'both') && r.poo_color) {
-        detail += `，${r.poo_color}`
-      }
-      if ((r.type === 'poo' || r.type === 'both') && r.poo_shape) {
-        detail += `，${r.poo_shape}`
-      }
-      
+      if (r.has_rash === 1) detail += '，有红屁屁'
       if (r.note) detail += ` ${r.note}`
+      
       records.push({
         id: `diaper_${r.id}`,
         type: 'diaper',
@@ -224,15 +203,18 @@ const loadRecords = async () => {
         icon: meta.icon,
         color: meta.color,
         detail,
-        ago: formatAgo(r.timestamp),
         time: formatTime(r.timestamp, 'HH:mm'),
         timestamp: r.timestamp
       })
     })
   }
-
+  
   // 睡眠
-  const sleeps = await db.selectSql('SELECT * FROM sleeps ORDER BY start_time DESC')
+  const sleeps = await db.selectSql(`
+    SELECT * FROM sleeps 
+    WHERE start_time >= ${startTime} AND start_time < ${endTime}
+    ORDER BY start_time DESC
+  `)
   if (sleeps && sleeps.length > 0) {
     sleeps.forEach((r: any) => {
       const meta = typeMeta.sleep
@@ -249,146 +231,20 @@ const loadRecords = async () => {
         icon: meta.icon,
         color: meta.color,
         detail,
-        ago: formatAgo(r.start_time),
         time: formatTime(r.start_time, 'HH:mm'),
         timestamp: r.start_time
       })
     })
   }
-
-  // 营养补剂
-  const supplements = await db.selectSql('SELECT * FROM supplements ORDER BY timestamp DESC')
-  if (supplements && supplements.length > 0) {
-    const supLabels: Record<string, string> = { vitamin_ad: 'AD滴剂', probiotics: '益生菌', other: '其他' }
-    supplements.forEach((r: any) => {
-      const meta = typeMeta.supplement
-      let detail = supLabels[r.supplement_type] || ''
-      if (r.dosage) detail += `，${r.dosage}`
-      records.push({
-        id: `sup_${r.id}`,
-        type: 'supplement',
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail,
-        ago: formatAgo(r.timestamp),
-        time: formatTime(r.timestamp, 'HH:mm'),
-        timestamp: r.timestamp
-      })
-    })
-  }
-
-  // 辅食记录
-  const foods = await db.selectSql('SELECT * FROM foods ORDER BY timestamp DESC')
-  if (foods && foods.length > 0) {
-    foods.forEach((r: any) => {
-      const meta = typeMeta.food
-      let detail = r.food_type || ''
-      if (r.amount) detail += `，${r.amount}${r.unit || 'g'}`
-      records.push({
-        id: `food_${r.id}`,
-        type: 'food',
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail,
-        ago: formatAgo(r.timestamp),
-        time: formatTime(r.timestamp, 'HH:mm'),
-        timestamp: r.timestamp
-      })
-    })
-  }
-
-  // 成长指标
-  const growthRecords = await db.selectSql('SELECT * FROM growth_records ORDER BY timestamp DESC')
-  if (growthRecords && growthRecords.length > 0) {
-    growthRecords.forEach((r: any) => {
-      const meta = typeMeta.growth
-      const parts: string[] = []
-      if (r.height) parts.push(`身高${r.height}cm`)
-      if (r.weight) parts.push(`体重${r.weight}kg`)
-      if (r.head_circumference) parts.push(`头围${r.head_circumference}cm`)
-      records.push({
-        id: `growth_${r.id}`,
-        type: 'growth',
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail: parts.join('，'),
-        ago: formatAgo(r.timestamp),
-        time: formatTime(r.timestamp, 'HH:mm'),
-        timestamp: r.timestamp
-      })
-    })
-  }
-
-  allRecords.value = records.sort((a, b) => b.timestamp - a.timestamp)
+  
+  // 按时间排序
+  todayRecords.value = records.sort((a, b) => b.timestamp - a.timestamp)
 }
 
-// ===== 筛选 + 分组 =====
-const dayLabelOf = (timestamp: number): string => {
-  const d = new Date(timestamp)
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  const dayDiff = Math.round((today - target) / (1000 * 60 * 60 * 24))
-  if (dayDiff === 0) return '今天'
-  if (dayDiff === 1) return '昨天'
-  return formatTime(timestamp, 'MM月DD日')
+// 页面导航
+const goToFeeding = () => {
+  uni.navigateTo({ url: '/pages/feeding/index' })
 }
-
-const babyDayOf = (timestamp: number): string => {
-  if (!babyInfo.value.birthday) return ''
-  const birthday = new Date(babyInfo.value.birthday).getTime()
-  const days = Math.floor((timestamp - birthday) / (1000 * 60 * 60 * 24)) + 1
-  return days > 0 ? `第${days}天` : ''
-}
-
-const buildSummary = (items: RecordItem[]): string => {
-  const counter: Record<string, number> = {}
-  items.forEach((it) => {
-    counter[it.type] = (counter[it.type] || 0) + 1
-  })
-  const parts: string[] = []
-  typeOptions.forEach((opt) => {
-    if (opt.value !== 'all' && counter[opt.value]) {
-      parts.push(`${opt.label} ${counter[opt.value]}次`)
-    }
-  })
-  return parts.join('  ·  ')
-}
-
-const groupedRecords = computed(() => {
-  let list = allRecords.value
-
-  if (filterType.value !== 'all') {
-    list = list.filter((r) => r.type === filterType.value)
-  }
-
-  if (filterDate.value) {
-    list = list.filter((r) => formatTime(r.timestamp, 'YYYY-MM-DD') === filterDate.value)
-  }
-
-  const map: Record<string, RecordItem[]> = {}
-  list.forEach((r) => {
-    const key = formatTime(r.timestamp, 'YYYY-MM-DD')
-    if (!map[key]) map[key] = []
-    map[key].push(r)
-  })
-
-  return Object.keys(map)
-    .sort((a, b) => (a < b ? 1 : -1))
-    .map((dateKey) => {
-      const items = map[dateKey]
-      return {
-        dateKey,
-        dayLabel: dayLabelOf(items[0].timestamp),
-        babyDay: babyDayOf(items[0].timestamp),
-        summary: buildSummary(items),
-        items
-      }
-    })
-})
 
 // ===== 快捷记录跳转 =====
 const handleRecord = (type: string) => {
@@ -412,12 +268,11 @@ onShow(async () => {
     await db.open()
     await db.initTables()
 
-    const babyResult = await db.selectSql('SELECT * FROM baby_info LIMIT 1')
-    if (babyResult && babyResult.length > 0) {
-      babyInfo.value = babyResult[0]
-    }
-
-    await loadRecords()
+    // 并行加载所有数据
+    await Promise.all([
+      loadTodayData(),
+      loadTodayRecords()
+    ])
   } catch (error) {
     console.error('加载数据失败', error)
   }
@@ -425,147 +280,129 @@ onShow(async () => {
 </script>
 
 <style scoped>
-.index-page {
+.home-page {
   min-height: 100vh;
   background: #FFF5F7;
   padding-bottom: 160px;
 }
 
-/* ===== 筛选栏 ===== */
-.filter-bar {
+/* 喂养记录入口 */
+.feeding-entry {
+  background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
+  margin: 15px;
+  border-radius: 20px;
+  padding: 25px 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: #FFF5F7;
+  box-shadow: 0 4px 12px rgba(255, 158, 196, 0.3);
+  transition: transform 0.2s;
 }
 
-.filter-type {
+.feeding-entry:active {
+  transform: scale(0.98);
+}
+
+.entry-icon {
+  font-size: 48px;
+  margin-right: 15px;
+}
+
+.entry-content {
+  flex: 1;
+}
+
+.entry-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+}
+
+.entry-stats {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.stat-divider {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 4px;
+}
+
+.entry-arrow {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: 10px;
+}
+
+/* 今日记录 */
+.today-section {
+  margin: 15px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(255, 158, 196, 0.08);
+}
+
+.section-title {
   font-size: 16px;
   font-weight: bold;
   color: #333333;
+  margin-bottom: 12px;
+  padding-left: 4px;
 }
 
-.filter-arrow {
-  font-size: 10px;
-  margin-left: 6px;
-  color: #999999;
-}
-
-.filter-date {
-  font-size: 13px;
-  color: #FF6BA8;
-  background: #FFEEF4;
-  border-radius: 16px;
-  padding: 6px 12px;
-}
-
-.type-dropdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 20px 16px;
-  background: #FFFFFF;
-  border-radius: 0 0 16px 16px;
-  margin: 0 12px;
-}
-
-.dropdown-item {
-  padding: 6px 14px;
-  font-size: 13px;
-  color: #666666;
-  background: #F7F7F7;
-  border-radius: 16px;
-}
-
-.dropdown-item.active {
-  background: #FF9EC4;
-  color: #FFFFFF;
-}
-
-/* ===== 时间轴 ===== */
-.timeline-scroll {
-  height: auto;
+.today-scroll {
+  max-height: 400px;
 }
 
 .empty-tip {
   text-align: center;
   color: #BBBBBB;
   font-size: 14px;
-  padding: 60px 20px;
-}
-
-.day-group {
-  margin: 15px 12px 0;
-}
-
-.day-header {
-  display: flex;
-  align-items: baseline;
-  margin-bottom: 8px;
-  padding-left: 4px;
-}
-
-.day-label {
-  font-size: 17px;
-  font-weight: bold;
-  color: #333333;
-}
-
-.day-sub {
-  font-size: 13px;
-  color: #999999;
-  margin-left: 8px;
-}
-
-.day-card {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 16px;
-}
-
-.day-summary {
-  font-size: 13px;
-  color: #FF6BA8;
-  padding-bottom: 12px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #F5F5F5;
-  line-height: 1.6;
-}
-
-.timeline {
-  position: relative;
+  padding: 40px 20px;
 }
 
 .timeline-item {
   display: flex;
   align-items: flex-start;
   position: relative;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .timeline-time {
-  width: 48px;
-  font-size: 13px;
+  width: 40px;
+  font-size: 12px;
   color: #999999;
-  padding-top: 2px;
+  padding-top: 6px;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
 .timeline-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  margin: 6px 12px 0 4px;
+  margin: 8px 8px 0 4px;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+  box-shadow: 0 0 0 2px rgba(255, 107, 168, 0.15);
 }
 
 .timeline-content {
   flex: 1;
+  background: #FAFAFA;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-left: -2px;
 }
 
 .timeline-row {
@@ -575,30 +412,24 @@ onShow(async () => {
 }
 
 .timeline-icon {
-  font-size: 18px;
+  font-size: 16px;
   margin-right: 6px;
 }
 
 .timeline-type {
-  font-size: 15px;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
   color: #333333;
-  margin-right: 10px;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .timeline-detail {
-  font-size: 14px;
+  font-size: 12px;
   color: #666666;
   white-space: pre-line;
-}
-
-.timeline-ago {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #FF6BA8;
-  background: #FFEEF4;
-  border-radius: 12px;
-  padding: 2px 10px;
+  line-height: 1.5;
+  flex: 1;
+  min-width: 0;
 }
 </style>

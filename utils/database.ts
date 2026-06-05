@@ -84,6 +84,20 @@ class Database {
   }
 
   /**
+   * H5环境：保存数据到localStorage
+   */
+  private saveToStorage(): void {
+    // #ifndef APP-PLUS
+    try {
+      localStorage.setItem(this.localStorageKey, JSON.stringify(this.data))
+      console.log('数据已保存到localStorage')
+    } catch (e) {
+      console.error('保存本地存储失败', e)
+    }
+    // #endif
+  }
+
+  /**
    * 执行 SQL 语句（INSERT/UPDATE/DELETE）
    */
   async executeSql(sql: string): Promise<void> {
@@ -145,14 +159,22 @@ class Database {
   private executeLocalSql(sql: string): void {
     const upperSql = sql.trim().toUpperCase()
     
+    console.log('执行SQL:', sql)
+    
     // INSERT 语句
     if (upperSql.startsWith('INSERT INTO')) {
-      const match = sql.match(/INSERT INTO (\w+)\s+\([^)]+\)\s+VALUES\s+\((.+)\)/i)
+      const match = sql.match(/INSERT INTO (\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+)\)/i)
       if (match) {
         const table = match[1]
-        const valuesStr = match[2]
+        const fieldsStr = match[2]
+        const valuesStr = match[3]
         
-        // 解析值（简化处理）
+        console.log('INSERT语句解析:', { table, fieldsStr, valuesStr })
+        
+        // 解析字段名
+        const fields = fieldsStr.split(',').map(f => f.trim())
+        
+        // 解析值
         const values = this.parseInsertValues(valuesStr)
         
         // 确保表存在
@@ -163,21 +185,21 @@ class Database {
         // 生成ID
         const row: any = { id: this.data[table].length + 1 }
         
-        // 根据表结构映射字段
-        const columns = this.getTableColumns(table)
-        columns.forEach((col, index) => {
+        // 映射字段和值
+        fields.forEach((field, index) => {
           if (index < values.length) {
-            row[col] = values[index]
+            row[field] = values[index]
           }
         })
         
+        console.log('插入行:', row)
         this.data[table].push(row)
         this.saveToStorage()
       }
     }
     
     // UPDATE 语句
-    const updateMatch = sql.match(/UPDATE\s+(\w+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i)
+    const updateMatch = sql.match(/UPDATE\s+(\w+)\s+SET\s+([\s\S]+?)\s+WHERE\s+([\s\S]+)/i)
     if (updateMatch) {
       const table = updateMatch[1]
       const setClause = updateMatch[2]
@@ -262,7 +284,10 @@ class Database {
         inString = false
         stringChar = ''
       } else if (char === ',' && !inString) {
-        values.push(this.parseValue(current.trim()))
+        const trimmed = current.trim()
+        // 移除引号
+        const cleanValue = trimmed.replace(/^['"]|['"]$/g, '')
+        values.push(this.parseValue(cleanValue))
         current = ''
       } else {
         current += char
@@ -270,9 +295,12 @@ class Database {
     }
     
     if (current.trim()) {
-      values.push(this.parseValue(current.trim()))
+      const trimmed = current.trim()
+      const cleanValue = trimmed.replace(/^['"]|['"]$/g, '')
+      values.push(this.parseValue(cleanValue))
     }
     
+    console.log('解析INSERT VALUES:', valuesStr, '=>', values)
     return values
   }
 
@@ -280,10 +308,12 @@ class Database {
    * H5环境：解析单个值
    */
   private parseValue(val: string): any {
-    if (val === 'NULL') return null
-    if (val === 'true' || val === 'false') return val === 'true'
-    if (!isNaN(Number(val))) return Number(val)
-    return val
+    // 去除值两端的引号（兼容 UPDATE SET / WHERE 中带引号的字符串值）
+    const unquoted = val.replace(/^['"]|['"]$/g, '')
+    if (unquoted === 'NULL') return null
+    if (unquoted === 'true' || unquoted === 'false') return unquoted === 'true'
+    if (unquoted !== '' && !isNaN(Number(unquoted))) return Number(unquoted)
+    return unquoted
   }
 
   /**
@@ -299,7 +329,8 @@ class Database {
       supplements: ['unique_id', 'supplement_type', 'dosage', 'note', 'timestamp', 'device_id', 'created_at'],
       growth_records: ['unique_id', 'height', 'weight', 'head_circumference', 'note', 'timestamp', 'device_id', 'created_at'],
       photos: ['unique_id', 'photo_path', 'thumbnail_path', 'caption', 'month', 'timestamp', 'device_id', 'created_at'],
-      reminders: ['type', 'title', 'content', 'reminder_time', 'is_enabled', 'repeat_type', 'last_triggered', 'created_at']
+      reminders: ['type', 'title', 'content', 'reminder_time', 'is_enabled', 'repeat_type', 'last_triggered', 'created_at'],
+      vaccines: ['unique_id', 'vaccine_name', 'vaccine_type', 'dose', 'scheduled_date', 'actual_date', 'injection_site', 'batch_number', 'manufacturer', 'hospital', 'doctor', 'status', 'adverse_reaction', 'note', 'device_id', 'created_at']
     }
     return schemas[table] || []
   }
@@ -373,19 +404,6 @@ class Database {
         }))
       }
       
-      // ORDER BY
-      const orderMatch = sql.match(/ORDER BY\s+(\w+)(?:\s+(ASC|DESC))?/i)
-      if (orderMatch) {
-        const field = orderMatch[1]
-        const order = (orderMatch[2] || 'ASC').toUpperCase()
-        data.sort((a, b) => {
-          if (order === 'DESC') {
-            return (b[field] || 0) - (a[field] || 0)
-          }
-          return (a[field] || 0) - (b[field] || 0)
-        })
-      }
-      
       // LIMIT
       const limitMatch = sql.match(/LIMIT\s+(\d+)/i)
       if (limitMatch) {
@@ -397,17 +415,6 @@ class Database {
     }
     
     return []
-  }
-
-  /**
-   * 保存到localStorage
-   */
-  private saveToStorage(): void {
-    try {
-      localStorage.setItem(this.localStorageKey, JSON.stringify(this.data))
-    } catch (e) {
-      console.error('保存本地存储失败', e)
-    }
   }
 
   /**
@@ -426,152 +433,49 @@ class Database {
    * 初始化数据库表
    */
   async initTables(): Promise<void> {
-    // 宝宝信息表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS baby_info (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        gender INTEGER DEFAULT 0,
-        birthday TEXT NOT NULL,
-        avatar TEXT,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    `)
-
-    // 喂奶记录表
-    // type: breast(母乳-计时) / formula(配方奶-ml) / bottle(瓶喂母乳-ml)
-    // 母乳计时使用 left_duration/right_duration(单位:秒) + start_time/end_time(时间戳)
-    // 瓶喂/配方奶使用 amount(ml)
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS feeds (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        type TEXT NOT NULL,
-        amount REAL DEFAULT 0,
-        unit TEXT DEFAULT 'ml',
-        left_duration INTEGER DEFAULT 0,
-        right_duration INTEGER DEFAULT 0,
-        start_time INTEGER,
-        end_time INTEGER,
-        note TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 纸尿裤记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS diapers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        type TEXT NOT NULL,
-        has_rash INTEGER DEFAULT 0,
-        poo_color TEXT,
-        poo_shape TEXT,
-        note TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 睡眠记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS sleeps (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        start_time INTEGER NOT NULL,
-        end_time INTEGER,
-        duration INTEGER,
-        note TEXT,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 辅食记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS foods (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        food_type TEXT NOT NULL,
-        amount REAL DEFAULT 0,
-        unit TEXT DEFAULT 'g',
-        note TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 营养补充记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS supplements (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        supplement_type TEXT NOT NULL,
-        dosage TEXT,
-        note TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 成长指标记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS growth_records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        height REAL,
-        weight REAL,
-        head_circumference REAL,
-        note TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 照片记录表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS photos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        unique_id TEXT UNIQUE NOT NULL,
-        photo_path TEXT NOT NULL,
-        thumbnail_path TEXT,
-        caption TEXT,
-        month TEXT,
-        timestamp INTEGER NOT NULL,
-        device_id TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 提醒配置表
-    await this.executeSql(`
-      CREATE TABLE IF NOT EXISTS reminders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        type TEXT NOT NULL,
-        title TEXT NOT NULL,
-        content TEXT,
-        reminder_time INTEGER NOT NULL,
-        is_enabled INTEGER DEFAULT 1,
-        repeat_type TEXT DEFAULT 'none',
-        last_triggered INTEGER,
-        created_at INTEGER NOT NULL
-      )
-    `)
-
-    // 旧库升级：为已存在的 feeds 表补齐母乳计时相关字段（保留旧数据）
-    await this.addColumnIfNotExists('feeds', 'left_duration INTEGER DEFAULT 0')
-    await this.addColumnIfNotExists('feeds', 'right_duration INTEGER DEFAULT 0')
-    await this.addColumnIfNotExists('feeds', 'start_time INTEGER')
-    await this.addColumnIfNotExists('feeds', 'end_time INTEGER')
-
-    console.log('数据库表初始化完成')
+    // #ifdef APP-PLUS
+    try {
+      // 疫苗接种记录表
+      await this.executeSql(`
+        CREATE TABLE IF NOT EXISTS vaccines (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          unique_id TEXT UNIQUE NOT NULL,
+          vaccine_name TEXT NOT NULL,
+          vaccine_type TEXT NOT NULL,
+          dose TEXT,
+          scheduled_date INTEGER,
+          actual_date INTEGER,
+          injection_site TEXT,
+          batch_number TEXT,
+          manufacturer TEXT,
+          hospital TEXT,
+          doctor TEXT,
+          status TEXT NOT NULL DEFAULT 'pending',
+          adverse_reaction TEXT,
+          note TEXT,
+          device_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
+      
+      console.log('数据库表初始化成功')
+    } catch (error) {
+      console.error('初始化数据库表失败', error)
+      throw error
+    }
+    // #endif
+    
+    // #ifndef APP-PLUS
+    console.log('H5环境：初始化本地存储表结构')
+    // H5环境：确保表存在
+    if (!this.data['vaccines']) {
+      this.data['vaccines'] = []
+    }
+    if (!this.data['baby_info']) {
+      this.data['baby_info'] = []
+    }
+    this.saveToStorage()
+    // #endif
   }
 }
 
