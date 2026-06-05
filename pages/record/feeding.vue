@@ -311,13 +311,26 @@ const handleSave = () => {
 onMounted(async () => {
   try {
     const rows = await db.selectSql(`
-      SELECT timestamp FROM feeds WHERE type = 'breast' ORDER BY timestamp DESC LIMIT 1
+      SELECT timestamp, left_duration, right_duration FROM feeds WHERE type = 'breast' ORDER BY timestamp DESC LIMIT 1
     `)
     if (rows && rows.length > 0) {
-      const diff = Date.now() - rows[0].timestamp
+      const record = rows[0]
+      const diff = Date.now() - record.timestamp
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      lastBreastTip.value = hours > 0 ? `${hours}小时${minutes}分钟前` : `${minutes}分钟前`
+      const timeAgo = hours > 0 ? `${hours}小时${minutes}分钟前` : `${minutes}分钟前`
+      
+      // 如果有左右时长数据，显示详细信息
+      if (record.left_duration || record.right_duration) {
+        const leftMin = Math.floor((record.left_duration || 0) / 60)
+        const rightMin = Math.floor((record.right_duration || 0) / 60)
+        const parts: string[] = []
+        if (leftMin > 0) parts.push(`左 ${leftMin}min`)
+        if (rightMin > 0) parts.push(`右 ${rightMin}min`)
+        lastBreastTip.value = `${timeAgo}（${parts.join(' · ')}）`
+      } else {
+        lastBreastTip.value = timeAgo
+      }
     }
   } catch (e) {
     console.error('加载上次记录失败', e)
