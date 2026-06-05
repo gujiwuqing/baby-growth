@@ -489,13 +489,19 @@ class Database {
   }
 
   /**
-   * 安全地为已存在的表添加列（列已存在时忽略错误）
+   * 安全地为已存在的表添加列（列已存在时跳过）
    */
   async addColumnIfNotExists(table: string, columnDefinition: string): Promise<void> {
     try {
-      await this.executeSql(`ALTER TABLE ${table} ADD COLUMN ${columnDefinition}`)
+      // 提取列名（columnDefinition 格式如 "age_months INTEGER"）
+      const columnName = columnDefinition.trim().split(/\s+/)[0]
+      const columns = await this.selectSql(`PRAGMA table_info(${table})`)
+      const exists = columns.some((col: any) => col.name === columnName)
+      if (!exists) {
+        await this.executeSql(`ALTER TABLE ${table} ADD COLUMN ${columnDefinition}`)
+      }
     } catch (error) {
-      // 列已存在时 SQLite 会报错，这里忽略即可，保证幂等
+      // 表不存在或其他异常时忽略，后续建表流程会处理
     }
   }
 

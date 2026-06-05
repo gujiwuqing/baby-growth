@@ -166,42 +166,40 @@ const importData = () => {
   // #endif
 }
 
-const clearAllData = () => {
-  uni.showModal({
+const clearAllData = async () => {
+  const [err, res]: any = await uni.showModal({
     title: '确认清空',
-    content: '此操作将清空所有数据，是否继续？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await db.executeSql('DELETE FROM feeds')
-          await db.executeSql('DELETE FROM diapers')
-          await db.executeSql('DELETE FROM sleeps')
-          await db.executeSql('DELETE FROM foods')
-          await db.executeSql('DELETE FROM supplements')
-          await db.executeSql('DELETE FROM growth_records')
-          await db.executeSql('DELETE FROM photos')
-          await db.executeSql('DELETE FROM vaccines')
-          await db.executeSql('DELETE FROM reminders')
-          await db.executeSql('DELETE FROM baby_info')
-          
-          // 重置数据库内部状态，确保下次 initTables 能重新初始化表结构
-          db.resetState()
-          // 清除疫苗排期同步标记，下次进入疫苗页会重新初始化
-          uni.removeStorageSync('vaccine_synced_birthday')
-          
-          // 重置当前页面表单
-          babyInfo.value.name = ''
-          babyInfo.value.gender = 1
-          babyInfo.value.birthday = ''
-          
-          uni.showToast({ title: '清空成功', icon: 'success' })
-        } catch (error) {
-          console.error('清空失败', error)
-          uni.showToast({ title: '清空失败', icon: 'none' })
-        }
-      }
-    }
+    content: '此操作将清空所有数据，是否继续？'
   })
+  if (err || !res.confirm) return
+  
+  try {
+    await db.executeSql('DELETE FROM feeds')
+    await db.executeSql('DELETE FROM diapers')
+    await db.executeSql('DELETE FROM sleeps')
+    await db.executeSql('DELETE FROM foods')
+    await db.executeSql('DELETE FROM supplements')
+    await db.executeSql('DELETE FROM growth_records')
+    await db.executeSql('DELETE FROM photos')
+    await db.executeSql('DELETE FROM vaccines')
+    await db.executeSql('DELETE FROM reminders')
+    await db.executeSql('DELETE FROM baby_info')
+    
+    // 重置数据库内部状态，确保下次 initTables 能重新初始化表结构
+    db.resetState()
+    // 清除疫苗排期同步标记，下次进入疫苗页会重新初始化
+    uni.removeStorageSync('vaccine_synced_birthday')
+    
+    // 重置当前页面表单
+    babyInfo.value.name = ''
+    babyInfo.value.gender = 1
+    babyInfo.value.birthday = ''
+    
+    uni.showToast({ title: '清空成功', icon: 'success' })
+  } catch (error) {
+    console.error('清空失败', error)
+    uni.showToast({ title: '清空失败', icon: 'none' })
+  }
 }
 
 onShow(async () => {
