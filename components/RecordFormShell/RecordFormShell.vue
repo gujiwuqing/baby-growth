@@ -70,21 +70,20 @@ const onCancel = () => emit('cancel')
   font-size: 14px;
   color: #FFFFFF;
 }
-</style>
 
-<style>
-/* 记录表单通用样式（非 scoped，供各记录页表单项复用） */
-.record-page .form-item {
+/* 使用 :deep() 穿透选择器，确保样式应用到 slot 内容 */
+.record-page :deep(.form-item) {
   margin-bottom: 20px;
 }
 
-.record-page .form-label {
+.record-page :deep(.form-label) {
   font-size: 14px;
   color: #666666;
   margin-bottom: 10px;
+  display: block;
 }
 
-.record-page .form-picker {
+.record-page :deep(.form-picker) {
   padding: 12px;
   border: 1px solid #E5E5E5;
   border-radius: 8px;
@@ -92,7 +91,7 @@ const onCancel = () => emit('cancel')
   color: #333333;
 }
 
-.record-page .form-input {
+.record-page :deep(.form-input) {
   width: 100%;
   padding: 12px;
   border: 1px solid #E5E5E5;
@@ -101,7 +100,7 @@ const onCancel = () => emit('cancel')
   box-sizing: border-box;
 }
 
-.record-page .form-textarea {
+.record-page :deep(.form-textarea) {
   width: 100%;
   padding: 12px;
   border: 1px solid #E5E5E5;
@@ -112,13 +111,13 @@ const onCancel = () => emit('cancel')
 }
 
 /* 通用选项按钮组（类型/状态等多选一） */
-.record-page .option-row {
+.record-page :deep(.option-row) {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.record-page .option-item {
+.record-page :deep(.option-item) {
   flex: 1;
   min-width: 80px;
   text-align: center;
@@ -129,7 +128,7 @@ const onCancel = () => emit('cancel')
   color: #666666;
 }
 
-.record-page .option-item.active {
+.record-page :deep(.option-item.active) {
   background: #FF9EC4;
   border-color: #FF9EC4;
   color: #FFFFFF;

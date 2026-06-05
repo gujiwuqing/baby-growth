@@ -431,7 +431,7 @@ onShow(async () => {
   transform: translateX(-50%);
   background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
   border-radius: 25px;
-  padding: 12px 30px;
+  padding: 5px 30px;
   border: none;
   box-shadow: 0 4px 12px rgba(255, 158, 196, 0.4);
   display: flex;
@@ -445,7 +445,7 @@ onShow(async () => {
 }
 
 .btn-text {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: bold;
   color: #FFFFFF;
 }
