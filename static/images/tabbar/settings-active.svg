@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <!-- 设置图标 - 选中状态 -->
+  <g fill="#FF9EC4">
+    <circle cx="40" cy="40" r="10"/>
+    <circle cx="40" cy="40" r="25" stroke="#FF9EC4" stroke-width="6" fill="none"/>
+    <rect x="37" y="8" width="6" height="12"/>
+    <rect x="37" y="61" width="6" height="12"/>
+    <rect x="8" y="37" width="12" height="6"/>
+    <rect x="61" y="37" width="12" height="6"/>
+    <rect x="15" y="15" width="6" height="10" transform="rotate(45 18 20)"/>
+    <rect x="60" y="56" width="6" height="10" transform="rotate(45 63 61)"/>
+    <rect x="15" y="56" width="6" height="10" transform="rotate(-45 18 61)"/>
+    <rect x="60" y="15" width="6" height="10" transform="rotate(-45 63 20)"/>
+  </g>
+</svg>

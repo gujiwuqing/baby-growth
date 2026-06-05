@@ -1,0 +1,18 @@
+{
+  "name": "baby-growth",
+  "version": "1.0.0",
+  "description": "宝宝成长记 - 记录宝宝成长的每一个瞬间",
+  "main": "main.ts",
+  "scripts": {
+    "dev": "uni",
+    "build": "uni build"
+  },
+  "keywords": [
+    "uniapp",
+    "vue3",
+    "typescript",
+    "baby-growth"
+  ],
+  "author": "",
+  "license": "MIT"
+}

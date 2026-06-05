@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <!-- 首页图标 - 选中状态 -->
+  <g fill="#FF9EC4">
+    <rect x="15" y="30" width="50" height="40" rx="6"/>
+    <polygon points="40,15 10,35 70,35"/>
+    <rect x="32" y="50" width="16" height="20"/>
+  </g>
+</svg>

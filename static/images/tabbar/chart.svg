@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="81" height="81" viewBox="0 0 81 81">
+  <!-- 统计图标 - 未选中状态 -->
+  <g fill="#999999">
+    <circle cx="25" cy="55" r="8"/>
+    <circle cx="40" cy="40" r="8"/>
+    <circle cx="55" cy="50" r="8"/>
+    <line x1="25" y1="47" x2="25" y2="25" stroke="#999999" stroke-width="3"/>
+    <line x1="40" y1="32" x2="40" y2="25" stroke="#999999" stroke-width="3"/>
+    <line x1="55" y1="42" x2="55" y2="25" stroke="#999999" stroke-width="3"/>
+  </g>
+</svg>

@@ -1,0 +1,69 @@
+/* 
+ * TabBar 图标占位样式
+ * 实际使用时请替换为真实图标
+ */
+
+/* 
+ * 临时方案：使用 CSS 生成简单的图标占位
+ * 生产环境请使用真实图标文件
+ */
+
+/* 首页图标 */
+.icon-home {
+  width: 24px;
+  height: 24px;
+  background: #999999;
+  border-radius: 4px;
+}
+
+.icon-home-active {
+  width: 24px;
+  height: 24px;
+  background: #FF9EC4;
+  border-radius: 4px;
+}
+
+/* 统计图标 */
+.icon-chart {
+  width: 24px;
+  height: 24px;
+  background: #999999;
+  border-radius: 50%;
+}
+
+.icon-chart-active {
+  width: 24px;
+  height: 24px;
+  background: #FF9EC4;
+  border-radius: 50%;
+}
+
+/* 相册图标 */
+.icon-album {
+  width: 24px;
+  height: 24px;
+  background: #999999;
+  border-radius: 4px;
+}
+
+.icon-album-active {
+  width: 24px;
+  height: 24px;
+  background: #FF9EC4;
+  border-radius: 4px;
+}
+
+/* 设置图标 */
+.icon-settings {
+  width: 24px;
+  height: 24px;
+  background: #999999;
+  border-radius: 50%;
+}
+
+.icon-settings-active {
+  width: 24px;
+  height: 24px;
+  background: #FF9EC4;
+  border-radius: 50%;
+}

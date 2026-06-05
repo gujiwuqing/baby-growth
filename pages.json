@@ -1,0 +1,130 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/feeding",
+      "style": {
+        "navigationBarTitleText": "喂奶记录",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/diaper",
+      "style": {
+        "navigationBarTitleText": "纸尿裤记录",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/sleep",
+      "style": {
+        "navigationBarTitleText": "睡眠记录",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/food",
+      "style": {
+        "navigationBarTitleText": "辅食记录",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/supplement",
+      "style": {
+        "navigationBarTitleText": "营养补充",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/record/growth",
+      "style": {
+        "navigationBarTitleText": "成长指标",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/statistics/index",
+      "style": {
+        "navigationBarTitleText": "统计分析",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/album/index",
+      "style": {
+        "navigationBarTitleText": "成长相册",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/reminder/index",
+      "style": {
+        "navigationBarTitleText": "提醒管理",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "宝宝成长记",
+    "navigationBarBackgroundColor": "#FF9EC4",
+    "backgroundColor": "#FFF5F7"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#FF9EC4",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/images/tabbar/home.svg",
+        "selectedIconPath": "static/images/tabbar/home-active.svg"
+      },
+      {
+        "pagePath": "pages/statistics/index",
+        "text": "统计",
+        "iconPath": "static/images/tabbar/chart.svg",
+        "selectedIconPath": "static/images/tabbar/chart-active.svg"
+      },
+      {
+        "pagePath": "pages/album/index",
+        "text": "相册",
+        "iconPath": "static/images/tabbar/album.svg",
+        "selectedIconPath": "static/images/tabbar/album-active.svg"
+      },
+      {
+        "pagePath": "pages/settings/index",
+        "text": "设置",
+        "iconPath": "static/images/tabbar/settings.svg",
+        "selectedIconPath": "static/images/tabbar/settings-active.svg"
+      }
+    ]
+  }
+}
