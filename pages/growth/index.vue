@@ -403,7 +403,7 @@ onShow(async () => {
   transform: translateX(-50%);
   background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
   border-radius: 50rpx;
-  padding: 10rpx 60rpx;
+  padding: 0 50rpx;
   border: none;
   box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.4);
   display: flex;
@@ -413,11 +413,11 @@ onShow(async () => {
 }
 
 .btn-icon {
-  font-size: 36rpx;
+  font-size: 28rpx;
 }
 
 .btn-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: bold;
   color: #FFFFFF;
 }

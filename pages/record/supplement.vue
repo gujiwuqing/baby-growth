@@ -29,11 +29,17 @@
 
     <view class="form-item">
       <view class="form-label">剂量</view>
-      <input 
-        class="form-input"
-        v-model="formData.dosage"
-        placeholder="如：1粒、5ml..."
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="text"
+          :value="formData.dosage"
+          @input="formData.dosage = $event.detail.value"
+          placeholder="如：1粒、5ml..."
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
@@ -96,4 +102,37 @@ const handleSave = async () => {
 </script>
 
 <style scoped>
+.form-item {
+  margin-bottom: 40rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 20rpx;
+}
+
+/* 输入框容器 - 确保可交互 */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  border: 1px solid #E5E5E5;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
 </style>

@@ -62,20 +62,11 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
-import { formatTime } from '@/utils/device'
-import { RECORD_TYPE_META } from '@/utils/recordTypes'
+import type { RecordItem } from '@/types/record'
+import { FEEDING_TYPES } from '@/types/record'
+import { loadRecordsByRange, computeRangeStats, getDayRange } from '@/composables/useRecordLoader'
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
-interface TimelineRecord {
-  id: string
-  icon: string
-  typeName: string
-  color: string
-  time: string
-  detail: string
-  timestamp: number
-}
+const feedAndFoodTypes = [...FEEDING_TYPES, 'food'] as string[]
 
 const currentDate = ref('')
 const dateLabel = ref('')
@@ -87,7 +78,7 @@ const stats = ref({
   avgMilk: 0
 })
 
-const records = ref<TimelineRecord[]>([])
+const records = ref<{ id: string; icon: string; typeName: string; color: string; time: string; detail: string; timestamp: number }[]>([])
 
 const parseDate = (dateStr: string): Date => {
   const parts = dateStr.split('-')
@@ -114,93 +105,46 @@ const shiftDay = (direction: number) => {
 
 const loadDayData = async () => {
   const d = parseDate(currentDate.value)
-  const dayStart = d.getTime()
-  const dayEnd = dayStart + DAY_MS
+  const { startTime, endTime } = getDayRange(d)
 
-  const items: TimelineRecord[] = []
-  let feedCount = 0
-  let totalMilk = 0
-  let foodCount = 0
+  const allRecords = await loadRecordsByRange(startTime, endTime, feedAndFoodTypes)
+  const rangeStats = computeRangeStats(allRecords, 1)
 
-  // 喂奶记录
-  const feeds = await db.selectSql(`
-    SELECT * FROM feeds
-    WHERE timestamp >= ${dayStart} AND timestamp < ${dayEnd}
-    ORDER BY timestamp ASC
-  `)
-  if (feeds && feeds.length > 0) {
-    feeds.forEach((r: any) => {
-      feedCount++
-      const meta = RECORD_TYPE_META[r.type] || RECORD_TYPE_META['formula']
-      let detail = ''
-      if (r.type === 'breast') {
-        const left = r.left_duration || 0
-        const right = r.right_duration || 0
-        const fmtSec = (sec: number) => sec < 60 ? `${sec}秒` : `${Math.floor(sec / 60)}分钟`
-        detail = `左${fmtSec(left)} 右${fmtSec(right)}`
-      } else {
-        detail = `${r.amount || 0}ml`
-        totalMilk += (r.amount || 0)
-      }
+  // 映射为当前页面的时间轴格式（按时间正序）
+  records.value = allRecords
+    .map((r: RecordItem) => ({
+      id: r.id,
+      icon: r.icon,
+      typeName: r.label,
+      color: r.color,
+      time: r.time,
+      detail: r.detail,
+      timestamp: r.timestamp
+    }))
+    .sort((a, b) => a.timestamp - b.timestamp)
 
-      items.push({
-        id: `feed_${r.id}`,
-        icon: meta.icon,
-        typeName: meta.label,
-        color: meta.color,
-        time: formatTime(r.timestamp, 'HH:mm'),
-        detail,
-        timestamp: r.timestamp
-      })
-    })
-  }
-
-  // 辅食记录
-  const foods = await db.selectSql(`
-    SELECT * FROM foods
-    WHERE timestamp >= ${dayStart} AND timestamp < ${dayEnd}
-    ORDER BY timestamp ASC
-  `)
-  if (foods && foods.length > 0) {
-    foods.forEach((r: any) => {
-      foodCount++
-      const meta = RECORD_TYPE_META['food']
-      const amount = r.amount ? `${r.amount}${r.unit || 'g'}` : ''
-      const detail = [r.food_type, amount].filter(Boolean).join(' · ')
-
-      items.push({
-        id: `food_${r.id}`,
-        icon: meta.icon,
-        typeName: meta.label,
-        color: meta.color,
-        time: formatTime(r.timestamp, 'HH:mm'),
-        detail: detail || '辅食',
-        timestamp: r.timestamp
-      })
-    })
-  }
-
-  // 按时间排序
-  items.sort((a, b) => a.timestamp - b.timestamp)
-  records.value = items
-
-  const milkFeeds = feedCount > 0 ? feeds!.filter((r: any) => r.type !== 'breast').length : 0
   stats.value = {
-    feedCount,
-    foodCount,
-    totalMilk,
-    avgMilk: milkFeeds > 0 ? Math.round(totalMilk / milkFeeds) : 0
+    feedCount: rangeStats.feedCount,
+    foodCount: rangeStats.foodCount,
+    totalMilk: rangeStats.totalMilk,
+    avgMilk: rangeStats.avgMilk
   }
 }
 
-onLoad((options: any) => {
-  if (options && options.date) {
-    currentDate.value = options.date
-  } else {
-    currentDate.value = formatDateStr(new Date())
+onLoad(async (options: any) => {
+  try {
+    await db.open()
+    await db.initTables()
+    if (options && options.date) {
+      currentDate.value = options.date
+    } else {
+      currentDate.value = formatDateStr(new Date())
+    }
+    updateLabel()
+    await loadDayData()
+  } catch (error) {
+    console.error('加载数据失败', error)
   }
-  updateLabel()
-  loadDayData()
 })
 </script>
 

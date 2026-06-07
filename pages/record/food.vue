@@ -2,21 +2,32 @@
   <RecordFormShell @save="handleSave" @cancel="cancel">
     <view class="form-item">
       <view class="form-label">食物类型</view>
-      <input 
-        class="form-input"
-        v-model="formData.foodType"
-        placeholder="如：米糊、果泥、蔬菜泥..."
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="text"
+          :value="formData.foodType"
+          @input="formData.foodType = $event.detail.value"
+          placeholder="如：米糊、果泥、蔬菜泥..."
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
       <view class="form-label">食物量 (g)</view>
-      <input 
-        class="form-input"
-        type="number"
-        v-model="formData.amount"
-        placeholder="请输入食物量"
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="number"
+          :value="formData.amount"
+          @input="formData.amount = $event.detail.value"
+          placeholder="请输入食物量"
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
@@ -80,4 +91,37 @@ const handleSave = async () => {
 </script>
 
 <style scoped>
+.form-item {
+  margin-bottom: 40rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 20rpx;
+}
+
+/* 输入框容器 - 确保可交互 */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  border: 1px solid #E5E5E5;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
 </style>

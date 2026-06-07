@@ -1,14 +1,14 @@
 <template>
   <view class="home-page">
-    <!-- 喂养记录入口 -->
-    <view class="feeding-entry" @click="goToFeeding">
-      <view class="entry-icon">🍼</view>
+    <!-- 记录总览入口 -->
+    <view class="feeding-entry" @click="goToRecords">
+      <view class="entry-icon">📊</view>
       <view class="entry-content">
-        <view class="entry-title">喂养记录</view>
+        <view class="entry-title">记录总览</view>
         <view class="entry-stats">
-          <text class="stat-text">今日 {{ todayStats.feeding }} 次</text>
+          <text class="stat-text">今日 {{ todayStats.totalRecords }} 条</text>
           <text class="stat-divider">|</text>
-          <text class="stat-text">总奶量 {{ todayStats.totalMilk }}ml</text>
+          <text class="stat-text">包含喂养/睡眠/换尿布等</text>
         </view>
       </view>
       <view class="entry-arrow">→</view>
@@ -45,174 +45,34 @@ import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
 import { db } from '@/utils/database'
-import { formatTime } from '@/utils/device'
-import { RECORD_TYPE_META } from '@/utils/recordTypes'
-
-interface RecordItem {
-  id: string
-  type: string
-  label: string
-  icon: string
-  color: string
-  detail: string
-  time: string
-  timestamp: number
-}
+import type { RecordItem } from '@/types/record'
+import { FEEDING_TYPES } from '@/types/record'
+import { loadRecordsByRange, getDayRange } from '@/composables/useRecordLoader'
 
 // 今日统计
 const todayStats = ref({
-  feeding: 0,
-  totalMilk: 0
+  totalRecords: 0
 })
 
 // 今日记录
 const todayRecords = ref<RecordItem[]>([])
 
-// 类型元信息（统一引用公共常量）
-const typeMeta = RECORD_TYPE_META
-
-const formatMin = (seconds: number): string => {
-  if (seconds < 60) return `${seconds}s`
-  const m = Math.floor(seconds / 60)
-  return `${m}min`
-}
-
-// 母乳详情
-const buildBreastDetail = (r: any): string => {
-  const left = r.left_duration || 0
-  const right = r.right_duration || 0
-  const parts: string[] = []
-  if (left > 0) parts.push(`左${formatMin(left)}`)
-  if (right > 0) parts.push(`右${formatMin(right)}`)
-  let detail = parts.join(' ') || `${formatMin(left + right)}`
-  if (r.start_time && r.end_time) {
-    detail += ` ${formatTime(r.start_time, 'HH:mm')}-${formatTime(r.end_time, 'HH:mm')}`
-  }
-  return detail
-}
-
-// 加载今日数据
+// 加载今日数据（统计 + 时间轴记录）
 const loadTodayData = async () => {
-  const today = new Date()
-  const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
-  const endTime = startTime + 24 * 60 * 60 * 1000
-  
-  // 今日喂养统计
-  const feeds = await db.selectSql(`
-    SELECT COUNT(*) as count, SUM(amount) as total
-    FROM feeds 
-    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
-  `)
-  
-  if (feeds && feeds.length > 0) {
-    todayStats.value.feeding = feeds[0].count
-    todayStats.value.totalMilk = feeds[0].total || 0
-  }
-}
-
-// 加载今日记录时间轴
-const loadTodayRecords = async () => {
-  const records: RecordItem[] = []
-  const today = new Date()
-  const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
-  const endTime = startTime + 24 * 60 * 60 * 1000
-  
-  // 喂养记录
-  const feeds = await db.selectSql(`
-    SELECT * FROM feeds 
-    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
-    ORDER BY timestamp DESC
-  `)
-  if (feeds && feeds.length > 0) {
-    feeds.forEach((r: any) => {
-      const meta = typeMeta[r.type] || typeMeta.formula
-      let detail = ''
-      if (r.type === 'breast') {
-        detail = buildBreastDetail(r)
-      } else {
-        detail = `${r.amount || 0}ml`
-      }
-      records.push({
-        id: `feed_${r.id}`,
-        type: r.type,
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail,
-        time: formatTime(r.timestamp, 'HH:mm'),
-        timestamp: r.timestamp
-      })
-    })
-  }
-  
-  // 换尿布
-  const diapers = await db.selectSql(`
-    SELECT * FROM diapers 
-    WHERE timestamp >= ${startTime} AND timestamp < ${endTime}
-    ORDER BY timestamp DESC
-  `)
-  if (diapers && diapers.length > 0) {
-    const diaperLabels: Record<string, string> = { pee: '小便', poo: '大便', both: '混合' }
-    diapers.forEach((r: any) => {
-      const meta = typeMeta.diaper
-      let detail = diaperLabels[r.type] || ''
-      if (r.has_rash === 1) detail += '，有红屁屁'
-      if (r.note) detail += ` ${r.note}`
-      
-      records.push({
-        id: `diaper_${r.id}`,
-        type: 'diaper',
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail,
-        time: formatTime(r.timestamp, 'HH:mm'),
-        timestamp: r.timestamp
-      })
-    })
-  }
-  
-  // 睡眠
-  const sleeps = await db.selectSql(`
-    SELECT * FROM sleeps 
-    WHERE start_time >= ${startTime} AND start_time < ${endTime}
-    ORDER BY start_time DESC
-  `)
-  if (sleeps && sleeps.length > 0) {
-    sleeps.forEach((r: any) => {
-      const meta = typeMeta.sleep
-      let detail = ''
-      if (r.duration) {
-        const h = Math.floor(r.duration / (1000 * 60 * 60))
-        const m = Math.floor((r.duration % (1000 * 60 * 60)) / (1000 * 60))
-        detail = h > 0 ? `${h}小时${m}分钟` : `${m}分钟`
-      }
-      records.push({
-        id: `sleep_${r.id}`,
-        type: 'sleep',
-        label: meta.label,
-        icon: meta.icon,
-        color: meta.color,
-        detail,
-        time: formatTime(r.start_time, 'HH:mm'),
-        timestamp: r.start_time
-      })
-    })
-  }
-  
-  // 按时间排序
-  todayRecords.value = records.sort((a, b) => b.timestamp - a.timestamp)
+  const { startTime, endTime } = getDayRange(new Date())
+  const records = await loadRecordsByRange(startTime, endTime)
+  todayRecords.value = records
+  todayStats.value.totalRecords = records.length
 }
 
 // 页面导航
-const goToFeeding = () => {
-  uni.navigateTo({ url: '/pages/feeding/index' })
+const goToRecords = () => {
+  uni.navigateTo({ url: '/pages/records/index' })
 }
 
 // ===== 快捷记录跳转 =====
 const handleRecord = (type: string) => {
-  const feedTypes = ['breast', 'formula', 'bottle']
-  if (feedTypes.includes(type)) {
+  if (FEEDING_TYPES.includes(type as any)) {
     uni.navigateTo({ url: `/pages/record/feeding?type=${type}` })
     return
   }
@@ -231,11 +91,7 @@ onShow(async () => {
     await db.open()
     await db.initTables()
 
-    // 并行加载所有数据
-    await Promise.all([
-      loadTodayData(),
-      loadTodayRecords()
-    ])
+    await loadTodayData()
   } catch (error) {
     console.error('加载数据失败', error)
   }

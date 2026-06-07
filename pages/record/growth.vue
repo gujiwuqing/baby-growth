@@ -2,32 +2,47 @@
   <RecordFormShell @save="handleSave" @cancel="cancel">
     <view class="form-item">
       <view class="form-label">身高 (cm)</view>
-      <input 
-        class="form-input"
-        type="digit"
-        v-model="formData.height"
-        placeholder="请输入身高"
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="digit"
+          :value="formData.height"
+          @input="formData.height = $event.detail.value"
+          placeholder="请输入身高"
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
       <view class="form-label">体重 (kg)</view>
-      <input 
-        class="form-input"
-        type="digit"
-        v-model="formData.weight"
-        placeholder="请输入体重"
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="digit"
+          :value="formData.weight"
+          @input="formData.weight = $event.detail.value"
+          placeholder="请输入体重"
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
       <view class="form-label">头围 (cm)</view>
-      <input 
-        class="form-input"
-        type="digit"
-        v-model="formData.headCircumference"
-        placeholder="请输入头围"
-      />
+      <view class="input-wrapper">
+        <input 
+          class="form-input"
+          type="digit"
+          :value="formData.headCircumference"
+          @input="formData.headCircumference = $event.detail.value"
+          placeholder="请输入头围"
+          :adjust-position="true"
+          :always-embed="true"
+        />
+      </view>
     </view>
 
     <view class="form-item">
@@ -117,5 +132,37 @@ const handleSave = () => {
 </script>
 
 <style scoped>
-/* growth 无特有样式，通用样式由 RecordFormShell 提供 */
+.form-item {
+  margin-bottom: 40rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 20rpx;
+}
+
+/* 输入框容器 - 确保可交互 */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  border: 1px solid #E5E5E5;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
 </style>

@@ -29,9 +29,13 @@
         <text class="day-number">{{ cell.day }}</text>
         <!-- 微型数据展示 -->
         <view class="day-mini" v-if="cell.inMonth && hasData(cell)">
-          <text class="mini-feed">🍼{{ getCellData(cell).feedCount }}</text>
-          <text class="mini-milk" v-if="getCellData(cell).milkTotal > 0">{{ getCellData(cell).milkTotal }}ml</text>
-          <text class="mini-food" v-if="getCellData(cell).hasFood">🥣</text>
+          <view class="mini-icons">
+            <text class="mini-icon" v-if="getCellData(cell).feedCount > 0">🍼</text>
+            <text class="mini-icon" v-if="getCellData(cell).sleepCount > 0">😴</text>
+            <text class="mini-icon" v-if="getCellData(cell).diaperCount > 0">👶</text>
+            <text class="mini-icon" v-if="getCellData(cell).foodCount > 0">🥣</text>
+          </view>
+          <text class="mini-count">{{ getCellData(cell).recordCount }}条</text>
         </view>
       </view>
     </view>
@@ -40,18 +44,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import type { DayData } from '@/types/record'
+import { EMPTY_DAY_DATA } from '@/types/record'
 
 interface CalendarCell {
   day: number
   inMonth: boolean
   isToday: boolean
   timestamp: number
-}
-
-export interface DayData {
-  feedCount: number
-  milkTotal: number
-  hasFood: boolean
 }
 
 const props = defineProps<{
@@ -118,15 +118,13 @@ const calendarCells = computed<CalendarCell[]>(() => {
   return cells
 })
 
-const emptyData: DayData = { feedCount: 0, milkTotal: 0, hasFood: false }
-
 const getCellData = (cell: CalendarCell): DayData => {
-  return props.dayData[cell.timestamp] || emptyData
+  return props.dayData[cell.timestamp] || EMPTY_DAY_DATA
 }
 
 const hasData = (cell: CalendarCell): boolean => {
   const data = getCellData(cell)
-  return data.feedCount > 0 || data.hasFood
+  return data.recordCount > 0
 }
 
 const isSelected = (cell: CalendarCell): boolean => {
@@ -257,29 +255,27 @@ const onSelectDay = (cell: CalendarCell) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 1px;
-  gap: 1px;
+  margin-top: 2rpx;
+  gap: 2rpx;
 }
 
-.mini-feed {
-  font-size: 18rpx;
+.mini-icons {
+  display: flex;
+  gap: 2rpx;
+}
+
+.mini-icon {
+  font-size: 16rpx;
+  line-height: 1.2;
+}
+
+.mini-count {
+  font-size: 16rpx;
   color: #FF9EC4;
   line-height: 1.2;
 }
 
-.mini-milk {
-  font-size: 16rpx;
-  color: #BBBBBB;
-  line-height: 1.2;
-}
-
-.mini-food {
-  font-size: 18rpx;
-  line-height: 1.2;
-}
-
-.day-cell.selected .mini-feed,
-.day-cell.selected .mini-milk {
+.day-cell.selected .mini-count {
   color: rgba(255, 255, 255, 0.85);
 }
 

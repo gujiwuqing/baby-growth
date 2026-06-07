@@ -9,6 +9,22 @@
       }
     },
     {
+      "path": "pages/records/index",
+      "style": {
+        "navigationBarTitleText": "记录总览",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/records/detail",
+      "style": {
+        "navigationBarTitleText": "记录详情",
+        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/feeding/index",
       "style": {
         "navigationBarTitleText": "喂养记录",
