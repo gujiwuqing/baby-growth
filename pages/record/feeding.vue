@@ -18,6 +18,10 @@
       <!-- 计时模式 -->
       <view v-if="breastMode === 'timer'" class="timer-area">
         <view class="last-tip" v-if="lastBreastTip">上次：{{ lastBreastTip }}</view>
+        <view class="unsaved-tip" v-if="hasUnsavedTimer">
+          <text class="unsaved-icon">⚠️</text>
+          <text class="unsaved-text">有未保存的计时数据</text>
+        </view>
         <view class="timer-circles">
           <view class="timer-side">
             <view
@@ -146,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow, onHide } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
 import { getDeviceId, formatTime } from '@/utils/device'
 import { useRecordSave } from '@/composables/useRecordSave'
@@ -186,6 +190,7 @@ const baseLeft = ref(0)
 const baseRight = ref(0)
 let timerHandle: any = null
 const lastBreastTip = ref('')
+const hasUnsavedTimer = ref(false) // 是否有未保存的计时状态
 
 // 手动输入（分钟）
 const manualLeft = ref('')
@@ -197,11 +202,75 @@ const formatDuration = (seconds: number) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+// 保存计时状态到 Storage
+const saveTimerState = () => {
+  if (feedType.value !== 'breast' || breastMode.value !== 'timer') return
+  const state = {
+    leftDuration: leftDuration.value,
+    rightDuration: rightDuration.value,
+    runningSide: runningSide.value,
+    timerStart: timerStart.value,
+    baseLeft: baseLeft.value,
+    baseRight: baseRight.value,
+    savedAt: Date.now()
+  }
+  uni.setStorageSync('breast_timer_state', JSON.stringify(state))
+}
+
+// 从 Storage 恢复计时状态
+const restoreTimerState = () => {
+  if (feedType.value !== 'breast' || breastMode.value !== 'timer') return
+  try {
+    const saved = uni.getStorageSync('breast_timer_state')
+    if (!saved) return
+    
+    const state = JSON.parse(saved)
+    const elapsedSinceSaved = Math.floor((Date.now() - state.savedAt) / 1000)
+    
+    // 如果保存时正在计时，需要补算暂停期间的时长
+    if (state.runningSide) {
+      if (state.runningSide === 'left') {
+        leftDuration.value = state.baseLeft + elapsedSinceSaved
+      } else {
+        rightDuration.value = state.baseRight + elapsedSinceSaved
+      }
+    } else {
+      // 已暂停状态，直接恢复
+      leftDuration.value = state.leftDuration
+      rightDuration.value = state.rightDuration
+    }
+    
+    hasUnsavedTimer.value = true
+    
+    // 提示用户有未保存的计时
+    if (leftDuration.value + rightDuration.value > 0) {
+      uni.showModal({
+        title: '恢复计时',
+        content: `发现上次未保存的计时：左侧 ${formatDuration(leftDuration.value)}，右侧 ${formatDuration(rightDuration.value)}\n\n是否继续计时？`,
+        success: (res) => {
+          if (res.confirm) {
+            // 用户选择继续，保持恢复的状态
+          } else {
+            // 用户选择不继续，清空计时
+            leftDuration.value = 0
+            rightDuration.value = 0
+            uni.removeStorageSync('breast_timer_state')
+            hasUnsavedTimer.value = false
+          }
+        }
+      })
+    }
+  } catch (e) {
+    console.error('恢复计时状态失败', e)
+  }
+}
+
 const toggleTimer = (side: 'left' | 'right') => {
   if (runningSide.value === side) {
     // 暂停当前侧
     stopTimer()
     runningSide.value = ''
+    saveTimerState() // 暂停时保存状态
     return
   }
   // 若另一侧在计时，先结算
@@ -219,6 +288,8 @@ const toggleTimer = (side: 'left' | 'right') => {
     } else if (runningSide.value === 'right') {
       rightDuration.value = baseRight.value + elapsed
     }
+    // 每秒保存状态
+    saveTimerState()
   }, 1000)
 }
 
@@ -227,10 +298,25 @@ const stopTimer = () => {
     clearInterval(timerHandle)
     timerHandle = null
   }
+  saveTimerState() // 停止时保存状态
 }
+
+// 页面隐藏时保存状态
+onHide(() => {
+  saveTimerState()
+})
+
+// 页面显示时恢复状态
+onShow(() => {
+  if (feedType.value === 'breast' && breastMode.value === 'timer') {
+    restoreTimerState()
+  }
+})
 
 onUnmounted(() => {
   stopTimer()
+  // 保存计时状态（不删除，下次进入可恢复）
+  saveTimerState()
 })
 
 // ===== 配方奶 / 瓶喂母乳：ml =====
@@ -296,6 +382,10 @@ const handleSave = () => {
         INSERT INTO feeds (unique_id, type, amount, unit, left_duration, right_duration, start_time, end_time, note, timestamp, device_id, created_at)
         VALUES ('${uniqueId}', 'breast', 0, 'min', ${leftSec}, ${rightSec}, ${startTs}, ${endTs}, '${note}', ${startTs}, '${deviceId}', ${createdAt})
       `)
+      
+      // 保存成功后清除计时状态
+      uni.removeStorageSync('breast_timer_state')
+      hasUnsavedTimer.value = false
     } else {
       const amount = Number(formData.value.amount) || 0
       const ts = timeStrToTimestamp(formData.value.time)
@@ -453,7 +543,27 @@ onMounted(async () => {
   background: #FFEEF4;
   border-radius: 40rpx;
   padding: 12rpx 0;
-  margin-bottom: 60rpx;
+  margin-bottom: 30rpx;
+}
+
+.unsaved-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  background: #FFF5E1;
+  border-radius: 40rpx;
+  padding: 12rpx 24rpx;
+  margin-bottom: 30rpx;
+}
+
+.unsaved-icon {
+  font-size: 24rpx;
+}
+
+.unsaved-text {
+  font-size: 24rpx;
+  color: #FF9500;
 }
 
 .timer-circles {

@@ -47,10 +47,26 @@
           <text class="placeholder-icon">📊</text>
           <text class="placeholder-text">暂无数据，记录宝宝成长吧~</text>
         </view>
-        <view v-else class="chart-simple">
-          <view class="simple-chart-item" v-for="(item, index) in recentData" :key="index">
-            <text class="chart-label">{{ item.label }}</text>
-            <text class="chart-value">{{ item.value }}</text>
+        <canvas 
+          v-else
+          canvas-id="growthChart"
+          class="growth-chart-canvas"
+          @click="onChartClick"
+        ></canvas>
+        
+        <!-- WHO 标准参考线说明 -->
+        <view class="chart-legend" v-if="hasData">
+          <view class="legend-item">
+            <view class="legend-line p3"></view>
+            <text class="legend-text">P3（偏低参考线）</text>
+          </view>
+          <view class="legend-item">
+            <view class="legend-line p50"></view>
+            <text class="legend-text">P50（标准参考线）</text>
+          </view>
+          <view class="legend-item">
+            <view class="legend-line p97"></view>
+            <text class="legend-text">P97（偏高参考线）</text>
           </view>
         </view>
       </view>
@@ -91,11 +107,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
 import { formatTime } from '@/utils/device'
 import { calculatePercentile, getPercentileDesc } from '@/utils/growthCurve'
+
+// WHO 标准数据（P3、P50、P97）用于绘制参考线
+const WHO_STANDARDS = {
+  height: {
+    male: { p3: [46.3, 50.8, 54.4, 57.3, 59.7, 61.7, 63.3, 64.8, 66.2, 67.5, 68.7, 69.9, 71.0], p50: [49.9, 54.7, 58.4, 61.4, 63.9, 65.9, 67.6, 69.2, 70.6, 72.0, 73.3, 74.5, 75.7], p97: [53.7, 58.6, 62.4, 65.5, 68.0, 70.1, 71.9, 73.5, 75.0, 76.5, 77.9, 79.2, 80.5] },
+    female: { p3: [45.6, 49.8, 53.0, 55.6, 57.8, 59.6, 61.2, 62.7, 64.0, 65.3, 66.5, 67.7, 68.9], p50: [49.1, 53.7, 57.1, 59.8, 62.1, 64.0, 65.7, 67.3, 68.7, 70.1, 71.3, 72.6, 73.8], p97: [52.9, 57.6, 61.1, 63.9, 66.2, 68.1, 69.8, 71.4, 72.9, 74.3, 75.6, 76.9, 78.1] }
+  },
+  weight: {
+    male: { p3: [2.5, 3.4, 4.3, 5.0, 5.6, 6.0, 6.4, 6.7, 7.0, 7.2, 7.5, 7.7, 7.9], p50: [3.3, 4.5, 5.6, 6.4, 7.0, 7.5, 7.9, 8.3, 8.6, 8.9, 9.2, 9.4, 9.6], p97: [4.4, 5.8, 7.1, 8.0, 8.7, 9.3, 9.8, 10.3, 10.7, 11.0, 11.4, 11.7, 12.0] },
+    female: { p3: [2.4, 3.2, 3.9, 4.5, 5.0, 5.4, 5.7, 6.0, 6.3, 6.5, 6.7, 6.9, 7.0], p50: [3.2, 4.2, 5.1, 5.8, 6.4, 6.9, 7.3, 7.6, 7.9, 8.2, 8.5, 8.7, 8.9], p97: [4.2, 5.5, 6.6, 7.5, 8.2, 8.8, 9.3, 9.8, 10.2, 10.6, 11.0, 11.3, 11.6] }
+  }
+}
 
 const latestData = ref({
   height: 0,
@@ -132,6 +160,129 @@ const recentData = computed(() => {
 
 const switchCurve = (type: string) => {
   activeCurve.value = type
+  // 切换曲线后重新绘制图表
+  nextTick(() => {
+    if (hasData.value) {
+      drawGrowthChart()
+    }
+  })
+}
+
+// 绘制成长曲线图表
+const drawGrowthChart = () => {
+  const ctx = uni.createCanvasContext('growthChart')
+  const canvasWidth = 320
+  const canvasHeight = 200
+  
+  // 清空画布
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+  
+  // 准备数据：取最近12个月的记录
+  const sortedRecords = [...historyRecords.value]
+    .filter(r => activeCurve.value === 'height' ? r.height > 0 : r.weight > 0)
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .slice(0, 12)
+  
+  if (sortedRecords.length === 0) return
+  
+  // 计算数据范围
+  const values = sortedRecords.map(r => activeCurve.value === 'height' ? r.height : r.weight)
+  const minVal = Math.min(...values)
+  const maxVal = Math.max(...values)
+  const months = sortedRecords.map(r => calculateMonths(r.timestamp))
+  const minMonth = Math.min(...months)
+  const maxMonth = Math.max(...months)
+  
+  // 绘制背景网格
+  ctx.setStrokeStyle('#F0F0F0')
+  ctx.setLineWidth(1)
+  for (let i = 0; i <= 4; i++) {
+    const y = 40 + i * 32
+    ctx.beginPath()
+    ctx.moveTo(40, y)
+    ctx.lineTo(canvasWidth - 20, y)
+    ctx.stroke()
+  }
+  
+  // 绘制 WHO 标准参考线
+  const gender = babyGender.value
+  const standardData = WHO_STANDARDS[activeCurve.value][gender]
+  const maxMonthIndex = Math.min(Math.floor(maxMonth), 12)
+  
+  // P3 线（红色）
+  ctx.setStrokeStyle('#FFB3BA')
+  ctx.setLineWidth(2)
+  ctx.beginPath()
+  for (let i = 0; i <= maxMonthIndex; i++) {
+    const x = 40 + (i / 12) * (canvasWidth - 60)
+    const y = canvasHeight - 20 - ((standardData.p3[i] - minVal) / (maxVal - minVal + 5)) * 160
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+  
+  // P50 线（绿色）
+  ctx.setStrokeStyle('#BAE1FF')
+  ctx.setLineWidth(2)
+  ctx.beginPath()
+  for (let i = 0; i <= maxMonthIndex; i++) {
+    const x = 40 + (i / 12) * (canvasWidth - 60)
+    const y = canvasHeight - 20 - ((standardData.p50[i] - minVal) / (maxVal - minVal + 5)) * 160
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+  
+  // P97 线（橙色）
+  ctx.setStrokeStyle('#FFFFBA')
+  ctx.setLineWidth(2)
+  ctx.beginPath()
+  for (let i = 0; i <= maxMonthIndex; i++) {
+    const x = 40 + (i / 12) * (canvasWidth - 60)
+    const y = canvasHeight - 20 - ((standardData.p97[i] - minVal) / (maxVal - minVal + 5)) * 160
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+  
+  // 绘制实际数据曲线（粉色）
+  ctx.setStrokeStyle('#FF9EC4')
+  ctx.setLineWidth(3)
+  ctx.beginPath()
+  sortedRecords.forEach((record, index) => {
+    const month = calculateMonths(record.timestamp)
+    const value = activeCurve.value === 'height' ? record.height : record.weight
+    const x = 40 + ((month - minMonth) / (maxMonth - minMonth + 1)) * (canvasWidth - 60)
+    const y = canvasHeight - 20 - ((value - minVal) / (maxVal - minVal + 5)) * 160
+    if (index === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  })
+  ctx.stroke()
+  
+  // 绘制数据点
+  ctx.setFillStyle('#FF6BA8')
+  sortedRecords.forEach((record) => {
+    const month = calculateMonths(record.timestamp)
+    const value = activeCurve.value === 'height' ? record.height : record.weight
+    const x = 40 + ((month - minMonth) / (maxMonth - minMonth + 1)) * (canvasWidth - 60)
+    const y = canvasHeight - 20 - ((value - minVal) / (maxVal - minVal + 5)) * 160
+    ctx.beginPath()
+    ctx.arc(x, y, 4, 0, 2 * Math.PI)
+    ctx.fill()
+  })
+  
+  // 绘制坐标轴标签
+  ctx.setFillStyle('#666666')
+  ctx.setFontSize(10)
+  ctx.fillText('月龄', 10, canvasHeight - 10)
+  ctx.fillText(activeCurve.value === 'height' ? 'cm' : 'kg', canvasWidth - 15, 20)
+  
+  ctx.draw()
+}
+
+// 点击图表查看详情
+const onChartClick = () => {
+  uni.showToast({ title: '点击数据点查看详情', icon: 'none' })
 }
 
 const goToRecord = () => {
@@ -225,6 +376,13 @@ onShow(async () => {
       loadLatestData(),
       loadHistory()
     ])
+    
+    // 加载完成后绘制图表
+    nextTick(() => {
+      if (hasData.value) {
+        drawGrowthChart()
+      }
+    })
   } catch (error) {
     console.error('加载数据失败', error)
   }
@@ -349,7 +507,6 @@ onShow(async () => {
 
 .chart-container {
   width: 100%;
-  height: 400rpx;
   position: relative;
 }
 
@@ -358,7 +515,7 @@ onShow(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 400rpx;
 }
 
 .placeholder-icon {
@@ -371,28 +528,54 @@ onShow(async () => {
   color: #BBBBBB;
 }
 
-.chart-simple {
-  padding: 20rpx 0;
+/* 成长曲线 Canvas */
+.growth-chart-canvas {
+  width: 640rpx;
+  height: 400rpx;
+  margin: 20rpx auto;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  border: 1px solid #F5F5F5;
 }
 
-.simple-chart-item {
+/* 图表图例 */
+.chart-legend {
   display: flex;
-  justify-content: space-between;
-  padding: 20rpx 30rpx;
+  justify-content: center;
+  gap: 24rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
   background: #FFF5F7;
   border-radius: 20rpx;
-  margin-bottom: 16rpx;
 }
 
-.chart-label {
-  font-size: 26rpx;
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.legend-line {
+  width: 32rpx;
+  height: 4rpx;
+  border-radius: 2rpx;
+}
+
+.legend-line.p3 {
+  background: #FFB3BA;
+}
+
+.legend-line.p50 {
+  background: #BAE1FF;
+}
+
+.legend-line.p97 {
+  background: #FFFFBA;
+}
+
+.legend-text {
+  font-size: 24rpx;
   color: #666666;
-}
-
-.chart-value {
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #FF9EC4;
 }
 
 /* 记录按钮 */

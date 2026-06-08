@@ -1,5 +1,16 @@
 <template>
   <view class="home-page">
+    <!-- 今日异常提示 -->
+    <view class="alert-section" v-if="todayAlerts.length > 0">
+      <view class="alert-item" v-for="(alert, index) in todayAlerts" :key="index" :class="alert.type">
+        <view class="alert-icon">{{ alert.icon }}</view>
+        <view class="alert-content">
+          <text class="alert-title">{{ alert.title }}</text>
+          <text class="alert-message">{{ alert.message }}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 记录总览入口 -->
     <view class="feeding-entry" @click="goToRecords">
       <view class="entry-icon">📊</view>
@@ -41,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
 import { db } from '@/utils/database'
@@ -51,11 +62,81 @@ import { loadRecordsByRange, getDayRange } from '@/composables/useRecordLoader'
 
 // 今日统计
 const todayStats = ref({
-  totalRecords: 0
+  totalRecords: 0,
+  feedCount: 0,
+  sleepCount: 0,
+  diaperCount: 0
 })
 
 // 今日记录
 const todayRecords = ref<RecordItem[]>([])
+
+// 宝宝月龄
+const babyMonths = ref(0)
+
+// 今日异常提示
+interface AlertItem {
+  type: 'warning' | 'info' | 'success'
+  icon: string
+  title: string
+  message: string
+}
+
+const todayAlerts = computed<AlertItem[]>(() => {
+  const alerts: AlertItem[] = []
+  
+  // 喂奶次数过少（建议每天 6-8 次）
+  if (todayStats.value.feedCount > 0 && todayStats.value.feedCount < 6) {
+    alerts.push({
+      type: 'warning',
+      icon: '⚠️',
+      title: '喂奶次数偏少',
+      message: `今日已喂奶 ${todayStats.value.feedCount} 次，建议增加至 6-8 次`
+    })
+  }
+  
+  // 换尿布次数过多（可能皮肤不适）
+  if (todayStats.value.diaperCount > 10) {
+    alerts.push({
+      type: 'info',
+      icon: '💡',
+      title: '换尿布频繁',
+      message: `今日已换 ${todayStats.value.diaperCount} 次尿布，注意观察宝宝皮肤状况`
+    })
+  }
+  
+  // 换尿布次数过少
+  if (todayStats.value.diaperCount > 0 && todayStats.value.diaperCount < 4) {
+    alerts.push({
+      type: 'warning',
+      icon: '⚠️',
+      title: '换尿布次数偏少',
+      message: `今日仅换了 ${todayStats.value.diaperCount} 次尿布，建议增加检查频率`
+    })
+  }
+  
+  // 睡眠记录为空
+  if (todayStats.value.totalRecords > 0 && todayStats.value.sleepCount === 0 && babyMonths.value < 12) {
+    alerts.push({
+      type: 'info',
+      icon: '😴',
+      title: '缺少睡眠记录',
+      message: '建议记录宝宝睡眠时间，帮助建立规律作息'
+    })
+  }
+  
+  // 今天还没有任何记录
+  if (todayStats.value.totalRecords === 0) {
+    alerts.push({
+      type: 'info',
+      icon: '📝',
+      title: '开始记录吧',
+      message: '记录宝宝的每一个成长瞬间'
+    })
+  }
+  
+  return alerts
+})
 
 // 加载今日数据（统计 + 时间轴记录）
 const loadTodayData = async () => {
@@ -63,6 +144,25 @@ const loadTodayData = async () => {
   const records = await loadRecordsByRange(startTime, endTime)
   todayRecords.value = records
   todayStats.value.totalRecords = records.length
+  
+  // 分类统计
+  todayStats.value.feedCount = records.filter(r => FEEDING_TYPES.includes(r.type as any)).length
+  todayStats.value.sleepCount = records.filter(r => r.type === 'sleep').length
+  todayStats.value.diaperCount = records.filter(r => r.type === 'diaper').length
+}
+
+// 加载宝宝信息
+const loadBabyInfo = async () => {
+  try {
+    const result = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
+    if (result && result.length > 0) {
+      const birthday = new Date(result[0].birthday).getTime()
+      const now = Date.now()
+      babyMonths.value = Math.floor((now - birthday) / (1000 * 60 * 60 * 24 * 30))
+    }
+  } catch (error) {
+    console.error('加载宝宝信息失败', error)
+  }
 }
 
 // 页面导航
@@ -90,8 +190,11 @@ onShow(async () => {
   try {
     await db.open()
     await db.initTables()
-
-    await loadTodayData()
+    
+    await Promise.all([
+      loadBabyInfo(),
+      loadTodayData()
+    ])
   } catch (error) {
     console.error('加载数据失败', error)
   }
@@ -103,6 +206,60 @@ onShow(async () => {
   min-height: 100vh;
   background: #FFF5F7;
   padding-bottom: 320rpx;
+}
+
+/* 异常提示区域 */
+.alert-section {
+  margin: 30rpx;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.alert-item.warning {
+  background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F0 100%);
+  border-left: 6rpx solid #FF6B6B;
+}
+
+.alert-item.info {
+  background: linear-gradient(135deg, #E3F2FD 0%, #F0F8FF 100%);
+  border-left: 6rpx solid #4A90E2;
+}
+
+.alert-item.success {
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  border-left: 6rpx solid #66BB6A;
+}
+
+.alert-icon {
+  font-size: 32rpx;
+  margin-top: 4rpx;
+}
+
+.alert-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.alert-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.alert-message {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.5;
 }
 
 /* 喂养记录入口 */

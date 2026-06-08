@@ -48,41 +48,52 @@
       <view class="summary-grid">
         <view class="summary-item">
           <text class="summary-value">{{ currentStats.recordCount }}</text>
-          <text class="summary-label">总记录</text>
+          <text class="summary-label">记录总数</text>
         </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'feeding'">
+        <view class="summary-item" v-if="currentStats.feedCount > 0">
           <text class="summary-value">{{ currentStats.feedCount }}</text>
-          <text class="summary-label">喂奶次</text>
+          <text class="summary-label">喂奶次数</text>
         </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'feeding'">
-          <text class="summary-value">{{ currentStats.totalMilk }}</text>
-          <text class="summary-label">总奶量ml</text>
-        </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'sleep'">
-          <text class="summary-value">{{ currentStats.totalSleepHours }}</text>
-          <text class="summary-label">睡眠(h)</text>
-        </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'diaper'">
+        <view class="summary-item" v-if="currentStats.diaperCount > 0">
           <text class="summary-value">{{ currentStats.diaperCount }}</text>
           <text class="summary-label">换尿布</text>
         </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'food'">
-          <text class="summary-value">{{ currentStats.foodCount }}</text>
-          <text class="summary-label">辅食次</text>
+        <view class="summary-item" v-if="currentStats.sleepCount > 0">
+          <text class="summary-value">{{ currentStats.totalSleepHours.toFixed(1) }}</text>
+          <text class="summary-label">睡眠(h)</text>
         </view>
-        <view class="summary-item" v-if="activeTab === 'all' || activeTab === 'supplement'">
-          <text class="summary-value">{{ currentStats.supplementCount }}</text>
-          <text class="summary-label">营养补剂</text>
+        <view class="summary-item" v-if="currentStats.foodCount > 0">
+          <text class="summary-value">{{ currentStats.foodCount }}</text>
+          <text class="summary-label">辅食</text>
+        </view>
+        <view class="summary-item" v-if="currentStats.growthCount > 0">
+          <text class="summary-value">{{ currentStats.growthCount }}</text>
+          <text class="summary-label">成长记录</text>
         </view>
       </view>
-      <!-- 日均数据（周/月模式） -->
-      <view class="summary-avg" v-if="activeDimension !== 'day' && currentStats.recordDays > 0">
+      <view class="summary-avg">
         <text class="avg-text">
-          {{ currentStats.recordDays }}天有记录 ·
-          日均{{ avgDailyRecords }}条
+          日均 {{ avgDailyRecords }} 条记录
           <text v-if="currentStats.feedCount > 0"> · 均奶量{{ currentStats.avgMilk }}ml/次</text>
           <text v-if="currentStats.sleepCount > 0"> · 日均睡{{ currentStats.avgSleepHours }}h</text>
         </text>
+      </view>
+      
+      <!-- 睡眠建议提示 -->
+      <view class="sleep-advice" v-if="sleepEvaluation">
+        <view class="advice-header">
+          <text class="advice-icon">😴</text>
+          <text class="advice-title">睡眠建议</text>
+        </view>
+        <view class="advice-content">
+          <text class="advice-status" :class="sleepEvaluation.status">
+            {{ sleepEvaluation.message }}
+          </text>
+          <text class="advice-text">{{ sleepEvaluation.advice.recommendation }}</text>
+          <text class="advice-warning" v-if="sleepEvaluation.advice.warning">
+            ⚠️ {{ sleepEvaluation.advice.warning }}
+          </text>
+        </view>
       </view>
     </view>
 
@@ -149,6 +160,7 @@ import {
   getMonthRange
 } from '@/composables/useRecordLoader'
 import { deleteRecord } from '@/composables/useRecordDelete'
+import { getSleepAdvice, evaluateSleep } from '@/utils/sleepAdvice'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -186,6 +198,7 @@ const currentStats = ref<RangeStats>({
 })
 const dayData = ref<Record<number, DayData>>({})
 const weekDayCounts = ref<number[]>([0, 0, 0, 0, 0, 0, 0])
+const babyBirthday = ref('') // 宝宝生日，用于计算月龄
 
 // ===== 计算属性 =====
 const isToday = computed(() => {
@@ -334,6 +347,19 @@ const loadData = async () => {
   }
 }
 
+// 计算睡眠建议
+const sleepEvaluation = computed(() => {
+  if (!babyBirthday.value || currentStats.value.sleepCount === 0) return null
+  
+  // 计算宝宝月龄
+  const birthday = new Date(babyBirthday.value).getTime()
+  const now = Date.now()
+  const months = Math.floor((now - birthday) / (1000 * 60 * 60 * 24 * 30))
+  
+  // 评估睡眠时长
+  return evaluateSleep(currentStats.value.avgSleepHours, months)
+})
+
 // ===== 记录操作 =====
 const onLongPress = (record: RecordItem) => {
   deleteRecord(record.id, () => {
@@ -365,6 +391,13 @@ onShow(async () => {
   try {
     await db.open()
     await db.initTables()
+    
+    // 加载宝宝信息
+    const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
+    if (babyResult && babyResult.length > 0) {
+      babyBirthday.value = babyResult[0].birthday
+    }
+    
     dbReady.value = true
     await loadData()
   } catch (error) {
@@ -528,6 +561,74 @@ onShow(async () => {
   font-size: 22rpx;
   color: #AAAAAA;
   line-height: 1.6;
+}
+
+/* 睡眠建议样式 */
+.sleep-advice {
+  margin-top: 24rpx;
+  padding: 20rpx;
+  background: #F0F8FF;
+  border-radius: 16rpx;
+  border-left: 4rpx solid #4A90E2;
+}
+
+.advice-header {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.advice-icon {
+  font-size: 24rpx;
+}
+
+.advice-title {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #4A90E2;
+}
+
+.advice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.advice-status {
+  font-size: 24rpx;
+  font-weight: bold;
+  padding: 8rpx 12rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  width: fit-content;
+}
+
+.advice-status.insufficient {
+  background: #FFE0E0;
+  color: #D32F2F;
+}
+
+.advice-status.normal {
+  background: #E0F2E0;
+  color: #2E7D32;
+}
+
+.advice-status.excessive {
+  background: #FFF0E0;
+  color: #E65100;
+}
+
+.advice-text {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.5;
+}
+
+.advice-warning {
+  font-size: 22rpx;
+  color: #E65100;
+  margin-top: 8rpx;
 }
 
 /* 周每日对比柱状图 */

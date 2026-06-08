@@ -207,7 +207,23 @@ const calculateAgeRange = (timestamp: number): string => {
   return `${months}月龄`
 }
 
-const MONTH_MS = 30 * 24 * 60 * 60 * 1000
+/**
+ * 精确计算生日 + N个月后的日期时间戳
+ * 处理月末边界情况（如 1月31日 + 1月 = 2月28/29日）
+ */
+const addMonthsToBirthday = (birthdayStr: string, months: number): number => {
+  const birthday = new Date(birthdayStr)
+  const result = new Date(birthday)
+  result.setMonth(result.getMonth() + months)
+  
+  // 处理月末边界：如果目标月份没有该日期，自动调整到月末
+  // 例如：1月31日 + 1月 = 2月28/29日（而非3月2/3日）
+  if (result.getDate() !== birthday.getDate()) {
+    result.setDate(0) // 设置为上月最后一天
+  }
+  
+  return result.getTime()
+}
 
 /**
  * 生日变更后重算所有未接种疫苗的排期。
@@ -229,7 +245,8 @@ const recalcScheduledDates = async (): Promise<boolean> => {
     const ageMonths = await resolveAgeMonths(row)
     if (ageMonths === null) continue
 
-    const newScheduled = birthdayTime + ageMonths * MONTH_MS
+    // 使用精确月龄计算
+    const newScheduled = addMonthsToBirthday(babyBirthday.value, ageMonths)
     if (newScheduled === row.scheduled_date) continue
 
     await db.executeSql(`
@@ -276,13 +293,13 @@ const initDefaultVaccines = async () => {
       uni.showToast({ title: '请先在设置中填写宝宝生日', icon: 'none' })
       return
     }
-    const babyBirthdayTime = new Date(babyBirthday.value).getTime()
     const now = Date.now()
     
     for (let index = 0; index < vaccineList.length; index++) {
       const vaccine = vaccineList[index]
       try {
-        const scheduledDate = babyBirthdayTime + vaccine.ageMonths * 30 * 24 * 60 * 60 * 1000
+        // 使用精确月龄计算接种日期
+        const scheduledDate = addMonthsToBirthday(babyBirthday.value, vaccine.ageMonths)
         // 唯一 id 用稳定字段组合，避免毫秒内 Date.now() 冲突
         const uniqueId = `${vaccine.type}_${vaccine.name}_${vaccine.dose}_${index}_${getDeviceId()}`
         const fullName = getVaccineFullName(vaccine)
