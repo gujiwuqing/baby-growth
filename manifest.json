@@ -1,49 +1,56 @@
 {
-  "name": "宝宝成长记",
-  "appid": "",
-  "description": "记录宝宝成长的每一个瞬间",
-  "versionName": "1.0.0",
-  "versionCode": "100",
-  "transformPx": true,
-  "app-plus": {
-    "usingComponents": true,
-    "nvueStyleCompiler": "uni-app",
-    "compilerVersion": 3,
-    "splashscreen": {
-      "alwaysShowBeforeRender": true,
-      "waiting": true,
-      "autoclose": true,
-      "delay": 0
+    "name" : "宝宝成长记",
+    "appid" : "__UNI__3394ABD",
+    "description" : "记录宝宝成长的每一个瞬间",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : true,
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {
+            "SQLite" : {}
+        },
+        "distribute" : {
+            "android" : {
+                "appid" : "com.baby.growth",
+                "packagename" : "com.baby.growth",
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>"
+                ]
+            },
+            "icons" : {
+                "android" : {
+                    "hdpi" : "static/images/tabbar/home-active.png"
+                }
+            }
+        }
     },
-    "modules": {
-      "SQLite": {}
+    "quickapp" : {},
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false
+        }
     },
-    "distribute": {
-      "android": {
-        "appid": "com.baby.growth",
-        "packagename": "com.baby.growth",
-        "permissions": [
-          "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
-          "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
-          "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-          "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
-          "<uses-permission android:name=\"android.permission.INTERNET\"/>"
-        ]
-      }
-    }
-  },
-  "quickapp": {},
-  "mp-weixin": {
-    "appid": "",
-    "setting": {
-      "urlCheck": false
-    }
-  },
-  "mp-alipay": {},
-  "mp-baidu": {},
-  "mp-toutiao": {},
-  "uniStatistics": {
-    "enable": false
-  },
-  "vueVersion": "3"
+    "mp-alipay" : {},
+    "mp-baidu" : {},
+    "mp-toutiao" : {},
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "vueVersion" : "3",
+    "locale" : "auto",
+    "fallbackLocale" : "zh-Hans"
 }
