@@ -18,12 +18,12 @@
 <script setup lang="ts">
 const quickItems = [
   { type: 'breast', icon: '🤱', label: '母乳' },
+  { type: 'diaper', icon: '👶', label: '换尿布' },
+  { type: 'supplement', icon: '💊', label: '营养补剂' },
   { type: 'formula', icon: '🍼', label: '配方奶' },
   { type: 'bottle', icon: '🍼', label: '瓶喂母乳' },
-  { type: 'diaper', icon: '👶', label: '换尿布' },
   { type: 'sleep', icon: '😴', label: '睡眠' },
   { type: 'food', icon: '🥣', label: '辅食' },
-  { type: 'supplement', icon: '💊', label: '营养补剂' },
   { type: 'growth', icon: '📏', label: '成长指标' }
 ]
 
