@@ -140,15 +140,27 @@ const todayAlerts = computed<AlertItem[]>(() => {
 
 // 加载今日数据（统计 + 时间轴记录）
 const loadTodayData = async () => {
-  const { startTime, endTime } = getDayRange(new Date())
-  const records = await loadRecordsByRange(startTime, endTime)
-  todayRecords.value = records
-  todayStats.value.totalRecords = records.length
-  
-  // 分类统计
-  todayStats.value.feedCount = records.filter(r => FEEDING_TYPES.includes(r.type as any)).length
-  todayStats.value.sleepCount = records.filter(r => r.type === 'sleep').length
-  todayStats.value.diaperCount = records.filter(r => r.type === 'diaper').length
+  try {
+    const { startTime, endTime } = getDayRange(new Date())
+    const records = await loadRecordsByRange(startTime, endTime)
+    todayRecords.value = records
+    todayStats.value.totalRecords = records.length
+    
+    // 分类统计
+    todayStats.value.feedCount = records.filter(r => FEEDING_TYPES.includes(r.type as any)).length
+    todayStats.value.sleepCount = records.filter(r => r.type === 'sleep').length
+    todayStats.value.diaperCount = records.filter(r => r.type === 'diaper').length
+  } catch (error) {
+    console.error('加载今日数据失败', error)
+    // 失败时使用默认值
+    todayRecords.value = []
+    todayStats.value = {
+      totalRecords: 0,
+      feedCount: 0,
+      sleepCount: 0,
+      diaperCount: 0
+    }
+  }
 }
 
 // 加载宝宝信息
@@ -161,7 +173,9 @@ const loadBabyInfo = async () => {
       babyMonths.value = Math.floor((now - birthday) / (1000 * 60 * 60 * 24 * 30))
     }
   } catch (error) {
+    // 数据库可能未初始化，静默失败
     console.error('加载宝宝信息失败', error)
+    babyMonths.value = 0
   }
 }
 
@@ -190,13 +204,19 @@ onShow(async () => {
   try {
     await db.open()
     await db.initTables()
-    
-    await Promise.all([
+
+    // 并行加载数据，但捕获各自错误，避免单个失败影响整体
+    await Promise.allSettled([
       loadBabyInfo(),
       loadTodayData()
     ])
   } catch (error) {
     console.error('加载数据失败', error)
+    uni.showToast({ 
+      title: '数据加载失败，请重启应用', 
+      icon: 'none',
+      duration: 3000
+    })
   }
 })
 </script>

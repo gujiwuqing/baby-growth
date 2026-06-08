@@ -307,72 +307,92 @@ const calculateMonths = (timestamp: number): number => {
 
 // 加载最新数据
 const loadLatestData = async () => {
-  const result = await db.selectSql(`
-    SELECT * FROM growth_records 
-    ORDER BY timestamp DESC LIMIT 1
-  `)
-  
-  if (result && result.length > 0) {
-    latestData.value = {
-      height: result[0].height || 0,
-      weight: result[0].weight || 0,
-      headCircumference: result[0].head_circumference || 0,
-      date: formatTime(result[0].timestamp, 'YYYY-MM-DD')
-    }
+  try {
+    const result = await db.selectSql(`
+      SELECT * FROM growth_records 
+      ORDER BY timestamp DESC LIMIT 1
+    `)
     
-    // 计算百分位数
-    const months = calculateMonths(result[0].timestamp)
-    const gender = babyGender.value
-    
-    if (latestData.value.height > 0) {
-      const p = calculatePercentile('height', latestData.value.height, months, gender)
-      heightPercentile.value = `${p} (${getPercentileDesc(p)})`
+    if (result && result.length > 0) {
+      latestData.value = {
+        height: result[0].height || 0,
+        weight: result[0].weight || 0,
+        headCircumference: result[0].head_circumference || 0,
+        date: formatTime(result[0].timestamp, 'YYYY-MM-DD')
+      }
+      
+      // 计算百分位数
+      const months = calculateMonths(result[0].timestamp)
+      const gender = babyGender.value
+      
+      if (latestData.value.height > 0) {
+        const p = calculatePercentile('height', latestData.value.height, months, gender)
+        heightPercentile.value = `${p} (${getPercentileDesc(p)})`
+      }
+      
+      if (latestData.value.weight > 0) {
+        const p = calculatePercentile('weight', latestData.value.weight, months, gender)
+        weightPercentile.value = `${p} (${getPercentileDesc(p)})`
+      }
+      
+      if (latestData.value.headCircumference > 0) {
+        const p = calculatePercentile('head', latestData.value.headCircumference, months, gender)
+        headPercentile.value = `${p} (${getPercentileDesc(p)})`
+      }
     }
-    
-    if (latestData.value.weight > 0) {
-      const p = calculatePercentile('weight', latestData.value.weight, months, gender)
-      weightPercentile.value = `${p} (${getPercentileDesc(p)})`
-    }
-    
-    if (latestData.value.headCircumference > 0) {
-      const p = calculatePercentile('head', latestData.value.headCircumference, months, gender)
-      headPercentile.value = `${p} (${getPercentileDesc(p)})`
-    }
+  } catch (error) {
+    console.error('加载最新数据失败', error)
   }
 }
 
 // 加载历史记录
 const loadHistory = async () => {
-  const result = await db.selectSql(`
-    SELECT * FROM growth_records 
-    ORDER BY timestamp DESC
-  `)
-  
-  if (result && result.length > 0) {
-    historyRecords.value = result.map((r: any) => ({
-      id: r.id,
-      date: formatTime(r.timestamp, 'YYYY-MM-DD'),
-      age: calculateAge(r.timestamp),
-      height: r.height,
-      weight: r.weight,
-      headCircumference: r.head_circumference,
-      timestamp: r.timestamp
-    }))
+  try {
+    const result = await db.selectSql(`
+      SELECT * FROM growth_records 
+      ORDER BY timestamp DESC
+    `)
+    
+    if (result && result.length > 0) {
+      historyRecords.value = result.map((r: any) => ({
+        id: r.id,
+        date: formatTime(r.timestamp, 'YYYY-MM-DD'),
+        age: calculateAge(r.timestamp),
+        height: r.height,
+        weight: r.weight,
+        headCircumference: r.head_circumference,
+        timestamp: r.timestamp
+      }))
+    }
+  } catch (error) {
+    console.error('加载历史记录失败', error)
+  }
+}
+
+// 加载宝宝信息
+const loadBabyInfo = async () => {
+  try {
+    const babyResult = await db.selectSql('SELECT birthday, gender FROM baby_info LIMIT 1')
+    if (babyResult && babyResult.length > 0) {
+      babyBirthday.value = babyResult[0].birthday
+      babyGender.value = babyResult[0].gender === 1 ? 'male' : 'female'
+    }
+  } catch (error) {
+    console.error('加载宝宝信息失败', error)
+    // 使用默认值
+    babyBirthday.value = ''
+    babyGender.value = 'male'
   }
 }
 
 onShow(async () => {
   try {
     await db.open()
+    await db.initTables()
     
-    // 加载宝宝信息
-    const babyResult = await db.selectSql('SELECT birthday, gender FROM baby_info LIMIT 1')
-    if (babyResult && babyResult.length > 0) {
-      babyBirthday.value = babyResult[0].birthday
-      babyGender.value = babyResult[0].gender === 1 ? 'male' : 'female'
-    }
-    
-    await Promise.all([
+    // 并行加载数据，捕获各自错误
+    await Promise.allSettled([
+      loadBabyInfo(),
       loadLatestData(),
       loadHistory()
     ])
@@ -385,6 +405,11 @@ onShow(async () => {
     })
   } catch (error) {
     console.error('加载数据失败', error)
+    uni.showToast({ 
+      title: '数据加载失败，请重启应用', 
+      icon: 'none',
+      duration: 3000
+    })
   }
 })
 </script>

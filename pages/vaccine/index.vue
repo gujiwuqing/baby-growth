@@ -338,34 +338,46 @@ onShow(async () => {
     await db.initTables()
     
     // 加载宝宝信息
-    const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
-    if (babyResult && babyResult.length > 0) {
-      babyBirthday.value = babyResult[0].birthday
-    } else {
-      // 如果没有宝宝信息，创建默认信息
-      const now = Date.now()
-      const birthday = formatTime(now, 'YYYY-MM-DD')
-      await db.executeSql(`
-        INSERT INTO baby_info (name, birthday, created_at, updated_at)
-        VALUES ('宝宝', '${escapeSqlValue(birthday)}', ${now}, ${now})
-      `)
-      babyBirthday.value = birthday
+    try {
+      const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
+      if (babyResult && babyResult.length > 0) {
+        babyBirthday.value = babyResult[0].birthday
+      } else {
+        // 如果没有宝宝信息，创建默认信息
+        const now = Date.now()
+        const birthday = formatTime(now, 'YYYY-MM-DD')
+        await db.executeSql(`
+          INSERT INTO baby_info (name, birthday, created_at, updated_at)
+          VALUES ('宝宝', '${escapeSqlValue(birthday)}', ${now}, ${now})
+        `)
+        babyBirthday.value = birthday
+      }
+    } catch (error) {
+      console.error('加载宝宝信息失败', error)
     }
     
     await loadVaccines()
 
     // 生日变更检测：与上次同步过的生日不一致则重算未接种疫苗排期
-    const syncedBirthday = uni.getStorageSync('vaccine_synced_birthday')
-    if (babyBirthday.value && syncedBirthday !== babyBirthday.value) {
-      const changed = await recalcScheduledDates()
-      uni.setStorageSync('vaccine_synced_birthday', babyBirthday.value)
-      if (changed) {
-        await loadVaccines(false)
+    try {
+      const syncedBirthday = uni.getStorageSync('vaccine_synced_birthday')
+      if (babyBirthday.value && syncedBirthday !== babyBirthday.value) {
+        const changed = await recalcScheduledDates()
+        uni.setStorageSync('vaccine_synced_birthday', babyBirthday.value)
+        if (changed) {
+          await loadVaccines(false)
+        }
       }
+    } catch (error) {
+      console.error('同步疫苗排期失败', error)
     }
   } catch (error) {
     console.error('加载数据失败', error)
-    uni.showToast({ title: '加载数据失败', icon: 'none' })
+    uni.showToast({ 
+      title: '数据加载失败，请重启应用', 
+      icon: 'none',
+      duration: 3000
+    })
   }
 })
 </script>

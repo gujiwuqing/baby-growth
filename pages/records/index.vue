@@ -393,15 +393,24 @@ onShow(async () => {
     await db.initTables()
     
     // 加载宝宝信息
-    const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
-    if (babyResult && babyResult.length > 0) {
-      babyBirthday.value = babyResult[0].birthday
+    try {
+      const babyResult = await db.selectSql('SELECT birthday FROM baby_info LIMIT 1')
+      if (babyResult && babyResult.length > 0) {
+        babyBirthday.value = babyResult[0].birthday
+      }
+    } catch (error) {
+      console.error('加载宝宝信息失败', error)
     }
     
     dbReady.value = true
     await loadData()
   } catch (error) {
     console.error('加载数据失败', error)
+    uni.showToast({ 
+      title: '数据加载失败，请重启应用', 
+      icon: 'none',
+      duration: 3000
+    })
   }
 })
 </script>
