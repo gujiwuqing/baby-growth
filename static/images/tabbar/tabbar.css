@@ -19,7 +19,7 @@
 .icon-home-active {
   width: 48rpx;
   height: 48rpx;
-  background: #FF9EC4;
+  background: #E8857A;
   border-radius: 8rpx;
 }
 
@@ -34,7 +34,7 @@
 .icon-chart-active {
   width: 48rpx;
   height: 48rpx;
-  background: #FF9EC4;
+  background: #E8857A;
   border-radius: 50%;
 }
 
@@ -49,7 +49,7 @@
 .icon-album-active {
   width: 48rpx;
   height: 48rpx;
-  background: #FF9EC4;
+  background: #E8857A;
   border-radius: 8rpx;
 }
 
@@ -64,6 +64,6 @@
 .icon-settings-active {
   width: 48rpx;
   height: 48rpx;
-  background: #FF9EC4;
+  background: #E8857A;
   border-radius: 50%;
 }

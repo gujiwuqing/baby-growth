@@ -1,5 +1,5 @@
 <template>
-  <view class="home-page">
+  <view class="home-page" :style="themeVars">
     <!-- 今日异常提示 -->
     <view class="alert-section" v-if="todayAlerts.length > 0">
       <view class="alert-item" v-for="(alert, index) in todayAlerts" :key="index" :class="alert.type">
@@ -48,6 +48,9 @@
 
     <!-- 快捷记录 -->
     <QuickRecord @record="handleRecord" />
+
+    <!-- 自定义 TabBar -->
+    <CustomTabBar :current="0" />
   </view>
 </template>
 
@@ -55,6 +58,10 @@
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
+import CustomTabBar from '@/components/CustomTabBar/CustomTabBar.vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { themeVars, activeTheme, initTheme } = useTheme()
 import { db } from '@/utils/database'
 import type { RecordItem } from '@/types/record'
 import { FEEDING_TYPES } from '@/types/record'
@@ -201,6 +208,7 @@ const handleRecord = (type: string) => {
 }
 
 onShow(async () => {
+  initTheme()
   try {
     await db.open()
     await db.initTables()
@@ -224,135 +232,196 @@ onShow(async () => {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: #FFF5F7;
+  background: var(--background-color, #FDF6F0);
   padding-bottom: 320rpx;
 }
 
-/* 异常提示区域 */
+/* ===== 异常提示区域 ===== */
 .alert-section {
-  margin: 30rpx;
+  margin: 24rpx 30rpx 0;
 }
 
 .alert-item {
   display: flex;
   align-items: flex-start;
-  gap: 16rpx;
-  padding: 24rpx;
-  border-radius: 20rpx;
+  gap: 20rpx;
+  padding: 28rpx 30rpx;
+  border-radius: var(--card-radius, 28rpx);
   margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6rpx;
+  border-radius: 3rpx;
 }
 
 .alert-item.warning {
-  background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F0 100%);
-  border-left: 6rpx solid #FF6B6B;
+  background: linear-gradient(135deg, rgba(245, 197, 163, 0.25) 0%, rgba(253, 246, 240, 0.6) 100%);
+}
+
+.alert-item.warning::before {
+  background: linear-gradient(180deg, #E8857A, #F2A89E);
 }
 
 .alert-item.info {
-  background: linear-gradient(135deg, #E3F2FD 0%, #F0F8FF 100%);
-  border-left: 6rpx solid #4A90E2;
+  background: linear-gradient(135deg, rgba(184, 169, 212, 0.15) 0%, rgba(253, 246, 240, 0.6) 100%);
+}
+
+.alert-item.info::before {
+  background: linear-gradient(180deg, #B8A9D4, #D0C5E6);
 }
 
 .alert-item.success {
-  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
-  border-left: 6rpx solid #66BB6A;
+  background: linear-gradient(135deg, rgba(140, 201, 176, 0.15) 0%, rgba(253, 246, 240, 0.6) 100%);
+}
+
+.alert-item.success::before {
+  background: linear-gradient(180deg, #8CC9B0, #A8DBC5);
 }
 
 .alert-icon {
-  font-size: 32rpx;
-  margin-top: 4rpx;
+  font-size: 36rpx;
+  margin-top: 2rpx;
+  flex-shrink: 0;
 }
 
 .alert-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 6rpx;
 }
 
 .alert-title {
   font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 700;
+  color: var(--text-color, #3D3036);
+  letter-spacing: 0.5rpx;
 }
 
 .alert-message {
   font-size: 24rpx;
-  color: #666666;
-  line-height: 1.5;
+  color: var(--text-secondary, #8A7E84);
+  line-height: 1.6;
 }
 
-/* 喂养记录入口 */
+/* ===== 记录总览入口 ===== */
 .feeding-entry {
-  background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
-  margin: 30rpx;
-  border-radius: 40rpx;
-  padding: 50rpx 40rpx;
+  background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
+  margin: 24rpx 30rpx;
+  border-radius: 36rpx;
+  padding: 44rpx 36rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.3);
-  transition: transform 0.2s;
+  box-shadow: 0 12rpx 40rpx rgba(232, 133, 122, 0.25), 0 4rpx 12rpx rgba(232, 133, 122, 0.1);
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.feeding-entry::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 280rpx;
+  height: 280rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
 }
 
 .feeding-entry:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 6rpx 20rpx rgba(232, 133, 122, 0.2);
 }
 
 .entry-icon {
-  font-size: 96rpx;
-  margin-right: 30rpx;
+  font-size: 80rpx;
+  margin-right: 28rpx;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));
 }
 
 .entry-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .entry-title {
-  font-size: 40rpx;
-  font-weight: bold;
+  font-size: 36rpx;
+  font-weight: 800;
   color: #FFFFFF;
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
+  letter-spacing: 1rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .entry-stats {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .stat-text {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.95);
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
 }
 
 .stat-divider {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 8rpx;
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 4rpx;
 }
 
 .entry-arrow {
-  font-size: 48rpx;
-  color: rgba(255, 255, 255, 0.8);
-  margin-left: 20rpx;
+  font-size: 44rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 16rpx;
+  position: relative;
+  z-index: 1;
+  font-weight: 300;
 }
 
-/* 今日记录 */
+/* ===== 今日记录 ===== */
 .today-section {
-  margin: 30rpx;
-  background: #FFFFFF;
-  border-radius: 32rpx;
-  padding: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  margin: 24rpx 30rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
+  padding: 32rpx;
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .section-title {
   font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 24rpx;
-  padding-left: 8rpx;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
+  margin-bottom: 28rpx;
+  padding-left: 4rpx;
+  letter-spacing: 0.5rpx;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 4rpx;
+  bottom: -8rpx;
+  width: 48rpx;
+  height: 6rpx;
+  background: var(--primary-gradient, linear-gradient(90deg, #E8857A, #F2A89E));
+  border-radius: 3rpx;
 }
 
 .today-scroll {
@@ -361,44 +430,48 @@ onShow(async () => {
 
 .empty-tip {
   text-align: center;
-  color: #BBBBBB;
+  color: var(--text-tertiary, #BDB2B7);
   font-size: 28rpx;
   padding: 80rpx 40rpx;
+  line-height: 1.8;
 }
 
+/* ===== 时间轴 ===== */
 .timeline-item {
   display: flex;
   align-items: flex-start;
   position: relative;
-  padding: 16rpx 0;
+  padding: 14rpx 0;
 }
 
 .timeline-time {
-  width: 80rpx;
+  width: 84rpx;
   font-size: 24rpx;
-  color: #999999;
-  padding-top: 12rpx;
+  color: var(--text-tertiary, #BDB2B7);
+  padding-top: 14rpx;
   flex-shrink: 0;
-  font-weight: 500;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .timeline-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 18rpx;
+  height: 18rpx;
   border-radius: 50%;
   margin: 16rpx 16rpx 0 8rpx;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  box-shadow: 0 0 0 4rpx rgba(255, 107, 168, 0.15);
+  box-shadow: 0 0 0 6rpx rgba(232, 133, 122, 0.12);
 }
 
 .timeline-content {
   flex: 1;
-  background: #FAFAFA;
+  background: linear-gradient(135deg, #FDF6F0 0%, #FEFCFA 100%);
   border-radius: 20rpx;
-  padding: 16rpx 20rpx;
+  padding: 18rpx 22rpx;
   margin-left: -4rpx;
+  border: 1rpx solid rgba(240, 230, 224, 0.6);
 }
 
 .timeline-row {
@@ -414,17 +487,17 @@ onShow(async () => {
 
 .timeline-type {
   font-size: 28rpx;
-  font-weight: 600;
-  color: #333333;
+  font-weight: 700;
+  color: var(--text-color, #3D3036);
   margin-right: 16rpx;
   flex-shrink: 0;
 }
 
 .timeline-detail {
   font-size: 24rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
   white-space: pre-line;
-  line-height: 1.5;
+  line-height: 1.6;
   flex: 1;
   min-width: 0;
 }

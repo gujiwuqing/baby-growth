@@ -4,7 +4,7 @@
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "首页",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -12,7 +12,7 @@
       "path": "pages/records/index",
       "style": {
         "navigationBarTitleText": "记录总览",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -20,7 +20,7 @@
       "path": "pages/records/detail",
       "style": {
         "navigationBarTitleText": "记录详情",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -28,7 +28,7 @@
       "path": "pages/feeding/index",
       "style": {
         "navigationBarTitleText": "喂养记录",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -36,7 +36,7 @@
       "path": "pages/feeding/detail",
       "style": {
         "navigationBarTitleText": "喂养详情",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -44,7 +44,7 @@
       "path": "pages/growth/index",
       "style": {
         "navigationBarTitleText": "身高体重",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -52,7 +52,7 @@
       "path": "pages/vaccine/index",
       "style": {
         "navigationBarTitleText": "疫苗接种",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -60,7 +60,7 @@
       "path": "pages/record/feeding",
       "style": {
         "navigationBarTitleText": "喂奶记录",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -68,7 +68,7 @@
       "path": "pages/record/diaper",
       "style": {
         "navigationBarTitleText": "纸尿裤记录",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -76,7 +76,7 @@
       "path": "pages/record/sleep",
       "style": {
         "navigationBarTitleText": "睡眠记录",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -84,7 +84,7 @@
       "path": "pages/record/food",
       "style": {
         "navigationBarTitleText": "辅食记录",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -92,7 +92,7 @@
       "path": "pages/record/supplement",
       "style": {
         "navigationBarTitleText": "营养补充",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -100,7 +100,7 @@
       "path": "pages/record/growth",
       "style": {
         "navigationBarTitleText": "成长指标",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     },
@@ -108,7 +108,7 @@
       "path": "pages/settings/index",
       "style": {
         "navigationBarTitleText": "设置",
-        "navigationBarBackgroundColor": "#FF9EC4",
+        "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
     }
@@ -116,12 +116,13 @@
   "globalStyle": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "宝宝成长记",
-    "navigationBarBackgroundColor": "#FF9EC4",
-    "backgroundColor": "#FFF5F7"
+    "navigationBarBackgroundColor": "#E8857A",
+    "backgroundColor": "#FDF6F0"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#FF9EC4",
+    "custom": true,
+    "color": "#BDB2B7",
+    "selectedColor": "#E8857A",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [

@@ -1,5 +1,5 @@
 <template>
-  <view class="growth-page">
+  <view class="growth-page" :style="themeVars">
     <!-- 最新数据卡片 -->
     <view class="latest-card">
       <view class="card-title">最新数据</view>
@@ -103,6 +103,9 @@
         </view>
       </scroll-view>
     </view>
+
+    <!-- 自定义 TabBar -->
+    <CustomTabBar :current="1" />
   </view>
 </template>
 
@@ -112,6 +115,10 @@ import { onShow } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
 import { formatTime } from '@/utils/device'
 import { calculatePercentile, getPercentileDesc } from '@/utils/growthCurve'
+import CustomTabBar from '@/components/CustomTabBar/CustomTabBar.vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { themeVars, initTheme } = useTheme()
 
 // WHO 标准数据（P3、P50、P97）用于绘制参考线
 const WHO_STANDARDS = {
@@ -386,6 +393,7 @@ const loadBabyInfo = async () => {
 }
 
 onShow(async () => {
+  initTheme()
   try {
     await db.open()
     await db.initTables()
@@ -417,25 +425,40 @@ onShow(async () => {
 <style scoped>
 .growth-page {
   min-height: 100vh;
-  background: #FFF5F7;
+  background: var(--background-color, #FDF6F0);
   padding: 30rpx;
   padding-bottom: 200rpx;
 }
 
 /* 最新数据卡片 */
 .latest-card {
-  background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
-  border-radius: 40rpx;
+  background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
+  border-radius: 36rpx;
   padding: 40rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.3);
+  margin-bottom: 24rpx;
+  box-shadow: 0 12rpx 40rpx rgba(232, 133, 122, 0.25), 0 4rpx 12rpx rgba(232, 133, 122, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-card::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -15%;
+  width: 240rpx;
+  height: 240rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
 }
 
 .card-title {
   font-size: 32rpx;
-  font-weight: bold;
+  font-weight: 800;
   color: #FFFFFF;
   margin-bottom: 30rpx;
+  letter-spacing: 0.5rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
 .data-grid {
@@ -492,11 +515,11 @@ onShow(async () => {
 
 /* 成长曲线 */
 .curve-section {
-  background: #FFFFFF;
-  border-radius: 32rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
   padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  margin-bottom: 24rpx;
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .section-header {
@@ -508,8 +531,9 @@ onShow(async () => {
 
 .section-title {
   font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
+  letter-spacing: 0.5rpx;
 }
 
 .curve-tabs {
@@ -519,15 +543,18 @@ onShow(async () => {
 
 .tab {
   font-size: 26rpx;
-  color: #999999;
-  padding: 8rpx 20rpx;
+  color: var(--text-tertiary, #BDB2B7);
+  padding: 10rpx 24rpx;
   border-radius: 24rpx;
-  background: #F5F5F5;
+  background: var(--divider-color, #F8F0EC);
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .tab.active {
   color: #FFFFFF;
-  background: #FF9EC4;
+  background: var(--primary-color, #E8857A);
+  box-shadow: 0 4rpx 12rpx rgba(232, 133, 122, 0.3);
 }
 
 .chart-container {
@@ -570,7 +597,7 @@ onShow(async () => {
   gap: 24rpx;
   margin-top: 20rpx;
   padding: 20rpx;
-  background: #FFF5F7;
+  background: var(--divider-color, #F8F0EC);
   border-radius: 20rpx;
 }
 
@@ -600,7 +627,7 @@ onShow(async () => {
 
 .legend-text {
   font-size: 24rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
 }
 
 /* 记录按钮 */
@@ -609,15 +636,21 @@ onShow(async () => {
   bottom: 160rpx;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
+  background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
   border-radius: 50rpx;
   padding: 0 50rpx;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.4);
+  box-shadow: 0 12rpx 32rpx rgba(232, 133, 122, 0.35);
   display: flex;
   align-items: center;
   gap: 16rpx;
   z-index: 10;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.record-btn:active {
+  transform: translateX(-50%) scale(0.95);
+  box-shadow: 0 6rpx 16rpx rgba(232, 133, 122, 0.25);
 }
 
 .btn-icon {
@@ -632,10 +665,10 @@ onShow(async () => {
 
 /* 历史记录 */
 .history-section {
-  background: #FFFFFF;
-  border-radius: 32rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
   padding: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .history-scroll {
@@ -644,14 +677,15 @@ onShow(async () => {
 
 .empty-tip {
   text-align: center;
-  color: #BBBBBB;
+  color: var(--text-tertiary, #BDB2B7);
   font-size: 28rpx;
   padding: 80rpx 40rpx;
+  line-height: 1.8;
 }
 
 .history-item {
   padding: 24rpx 0;
-  border-bottom: 1px solid #F8F8F8;
+  border-bottom: 1px solid var(--divider-color, #F8F0EC);
 }
 
 .history-item:last-child {
@@ -667,16 +701,17 @@ onShow(async () => {
 
 .date-text {
   font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 700;
+  color: var(--text-color, #3D3036);
 }
 
 .age-text {
   font-size: 24rpx;
-  color: #FF9EC4;
-  background: #FFF0F5;
-  padding: 4rpx 16rpx;
+  color: var(--primary-color, #E8857A);
+  background: rgba(232, 133, 122, 0.1);
+  padding: 6rpx 18rpx;
   border-radius: 16rpx;
+  font-weight: 600;
 }
 
 .history-data {
@@ -687,6 +722,6 @@ onShow(async () => {
 
 .data-text {
   font-size: 26rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
 }
 </style>

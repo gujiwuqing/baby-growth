@@ -1,5 +1,5 @@
 <template>
-  <view class="settings-page">
+  <view class="settings-page" :style="themeVars">
     <!-- 宝宝信息 -->
     <view class="settings-card">
       <view class="card-title">宝宝信息</view>
@@ -51,6 +51,28 @@
         <view class="action-text">清空所有数据</view>
       </view>
     </view>
+
+    <!-- 主题色选择 -->
+    <view class="settings-card">
+      <view class="card-title">主题色</view>
+      <view class="theme-grid">
+        <view
+          v-for="preset in THEME_PRESETS"
+          :key="preset.key"
+          class="theme-item"
+          :class="{ active: activeThemeKey === preset.key }"
+          @click="onSelectTheme(preset.key)"
+        >
+          <view class="theme-color" :style="{ background: `linear-gradient(135deg, ${preset.primary}, ${preset.primaryLight})` }">
+            <text v-if="activeThemeKey === preset.key" class="theme-check">✓</text>
+          </view>
+          <text class="theme-name">{{ preset.name }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 自定义 TabBar -->
+    <CustomTabBar :current="3" />
   </view>
 </template>
 
@@ -60,6 +82,14 @@ import { onShow } from '@dcloudio/uni-app'
 import { db, escapeSqlValue } from '@/utils/database'
 import { exportAllData, saveDataToFile } from '@/utils/export'
 import { readDataFromFile, importDataWithDedup } from '@/utils/import'
+import CustomTabBar from '@/components/CustomTabBar/CustomTabBar.vue'
+import { useTheme, THEME_PRESETS } from '@/composables/useTheme'
+
+const { themeVars, activeThemeKey, setTheme, initTheme } = useTheme()
+
+const onSelectTheme = (key: string) => {
+  setTheme(key)
+}
 
 /** 将 uni.showModal 包装为 Promise，兼容 App 端 */
 const showConfirm = (title: string, content: string): Promise<boolean> => {
@@ -212,6 +242,7 @@ const clearAllData = async () => {
 }
 
 onShow(async () => {
+  initTheme()
   try {
     await db.open()
     const result = await db.selectSql('SELECT * FROM baby_info LIMIT 1')
@@ -231,22 +262,37 @@ onShow(async () => {
 <style scoped>
 .settings-page {
   min-height: 100vh;
-  background: #FFF5F7;
+  background: var(--background-color, #FDF6F0);
   padding: 30rpx;
 }
 
 .settings-card {
-  background: #FFFFFF;
-  border-radius: 32rpx;
-  padding: 40rpx;
-  margin-bottom: 30rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
+  padding: 36rpx;
+  margin-bottom: 24rpx;
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .card-title {
   font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
   margin-bottom: 30rpx;
+  letter-spacing: 0.5rpx;
+  position: relative;
+  padding-left: 4rpx;
+}
+
+.card-title::after {
+  content: '';
+  position: absolute;
+  left: 4rpx;
+  bottom: -8rpx;
+  width: 48rpx;
+  height: 6rpx;
+  background: var(--primary-gradient, linear-gradient(90deg, #E8857A, #F2A89E));
+  border-radius: 3rpx;
 }
 
 .form-item {
@@ -255,24 +301,29 @@ onShow(async () => {
 
 .form-label {
   font-size: 28rpx;
-  color: #666666;
-  margin-bottom: 20rpx;
+  color: var(--text-secondary, #8A7E84);
+  margin-bottom: 16rpx;
+  font-weight: 600;
 }
 
 .form-input {
   width: 100%;
   padding: 24rpx;
-  border: 1px solid #E5E5E5;
-  border-radius: 16rpx;
+  border: 2rpx solid var(--border-color, #F0E6E0);
+  border-radius: 20rpx;
   font-size: 28rpx;
+  color: var(--text-color, #3D3036);
+  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  transition: border-color 0.2s;
 }
 
 .form-picker {
   padding: 24rpx;
-  border: 1px solid #E5E5E5;
-  border-radius: 16rpx;
+  border: 2rpx solid var(--border-color, #F0E6E0);
+  border-radius: 20rpx;
   font-size: 28rpx;
-  color: #333333;
+  color: var(--text-color, #3D3036);
+  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
 }
 
 .gender-selector {
@@ -284,50 +335,140 @@ onShow(async () => {
   flex: 1;
   padding: 24rpx;
   text-align: center;
-  border: 1px solid #E5E5E5;
-  border-radius: 16rpx;
+  border: 2rpx solid var(--border-color, #F0E6E0);
+  border-radius: 20rpx;
   font-size: 28rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
+  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  transition: all 0.25s;
+  font-weight: 600;
 }
 
 .gender-option.active {
-  background: #FFF0F5;
-  border-color: #FF9EC4;
-  color: #FF4D88;
+  background: linear-gradient(135deg, rgba(232, 133, 122, 0.08) 0%, rgba(242, 168, 158, 0.12) 100%);
+  border-color: var(--primary-color, #E8857A);
+  color: var(--primary-color, #E8857A);
+  box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.12);
 }
 
 .btn-save {
   width: 100%;
-  padding: 24rpx 0;
-  background: #FF9EC4;
+  padding: 26rpx 0;
+  background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
   border-radius: 50rpx;
-  font-size: 32rpx;
+  font-size: 30rpx;
+  font-weight: 700;
   color: #FFFFFF;
-  margin-top: 20rpx;
+  margin-top: 24rpx;
+  border: none;
+  box-shadow: 0 8rpx 28rpx rgba(232, 133, 122, 0.3);
+  letter-spacing: 1rpx;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-save:active {
+  transform: scale(0.97);
+  box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.2);
 }
 
 .action-item {
   display: flex;
   align-items: center;
   padding: 30rpx 0;
-  border-bottom: 1px solid #F5F5F5;
+  border-bottom: 1px solid var(--divider-color, #F8F0EC);
+  transition: background 0.2s;
 }
 
 .action-item:last-child {
   border-bottom: none;
 }
 
+.action-item:active {
+  background: rgba(253, 246, 240, 0.6);
+  border-radius: 16rpx;
+}
+
 .action-item.danger .action-text {
-  color: #FF4444;
+  color: #E05555;
 }
 
 .action-icon {
-  font-size: 48rpx;
-  margin-right: 24rpx;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-right: 20rpx;
+  background: var(--divider-color, #F8F0EC);
+  border-radius: 20rpx;
+  flex-shrink: 0;
 }
 
 .action-text {
   font-size: 28rpx;
-  color: #333333;
+  color: var(--text-color, #3D3036);
+  font-weight: 600;
+}
+
+/* 主题色选择器 */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24rpx;
+}
+
+.theme-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 0;
+  border-radius: 20rpx;
+  transition: all 0.25s;
+}
+
+.theme-item.active {
+  background: var(--divider-color, #F8F0EC);
+}
+
+.theme-color {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 4rpx solid transparent;
+}
+
+.theme-item.active .theme-color {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.theme-item:active .theme-color {
+  transform: scale(0.92);
+}
+
+.theme-check {
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 800;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+}
+
+.theme-name {
+  font-size: 22rpx;
+  color: var(--text-secondary, #8A7E84);
+  font-weight: 600;
+}
+
+.theme-item.active .theme-name {
+  color: var(--text-color, #3D3036);
+  font-weight: 700;
 }
 </style>

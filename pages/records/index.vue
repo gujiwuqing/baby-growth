@@ -1,5 +1,5 @@
 <template>
-  <view class="records-page">
+  <view class="records-page" :style="themeVars">
     <!-- 汇总维度切换：日 / 周 / 月 -->
     <view class="dimension-bar">
       <view
@@ -149,6 +149,9 @@ import { db } from '@/utils/database'
 import { formatTime } from '@/utils/device'
 import MonthCalendar from '@/components/MonthCalendar/MonthCalendar.vue'
 import QuickRecord from '@/components/QuickRecord/QuickRecord.vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { themeVars } = useTheme()
 import { FEEDING_TYPES } from '@/types/record'
 import type { RecordItem, DayData, RangeStats } from '@/types/record'
 import {
@@ -418,18 +421,18 @@ onShow(async () => {
 <style scoped>
 .records-page {
   min-height: 100vh;
-  background: #FFF5F7;
+  background: var(--background-color, #FDF6F0);
   padding-bottom: 320rpx;
 }
 
 /* 维度切换 */
 .dimension-bar {
   display: flex;
-  background: #FFFFFF;
+  background: var(--card-color, #FFFFFF);
   margin: 20rpx 30rpx 0;
   border-radius: 40rpx;
   padding: 8rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .dim-item {
@@ -437,16 +440,17 @@ onShow(async () => {
   text-align: center;
   padding: 18rpx 0;
   font-size: 28rpx;
-  color: #999999;
+  color: var(--text-tertiary, #BDB2B7);
   border-radius: 36rpx;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-weight: 600;
 }
 
 .dim-item.active {
-  background: linear-gradient(135deg, #FF9EC4 0%, #FFB8D9 100%);
+  background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
   color: #FFFFFF;
-  font-weight: bold;
-  box-shadow: 0 4rpx 12rpx rgba(255, 158, 196, 0.3);
+  font-weight: 700;
+  box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.3);
 }
 
 /* 日期导航 */
@@ -462,29 +466,30 @@ onShow(async () => {
   width: 56rpx;
   height: 56rpx;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: var(--card-color, #FFFFFF);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 36rpx;
-  color: #FF9EC4;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  color: var(--primary-color, #E8857A);
+  box-shadow: 0 2rpx 12rpx rgba(232, 133, 122, 0.1);
 }
 
 .nav-label {
   font-size: 30rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 700;
+  color: var(--text-color, #3D3036);
   min-width: 280rpx;
   text-align: center;
 }
 
 .nav-today {
   font-size: 24rpx;
-  color: #FF9EC4;
+  color: var(--primary-color, #E8857A);
   padding: 8rpx 20rpx;
-  border: 1px solid #FF9EC4;
+  border: 2rpx solid var(--primary-color, #E8857A);
   border-radius: 24rpx;
+  font-weight: 600;
 }
 
 /* 类型筛选 Tab */
@@ -495,42 +500,45 @@ onShow(async () => {
 
 .tab-bar {
   display: inline-flex;
-  background: #FFFFFF;
+  background: var(--card-color, #FFFFFF);
   padding: 12rpx 16rpx;
   border-radius: 32rpx;
   gap: 12rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .tab-item {
   padding: 14rpx 24rpx;
   font-size: 24rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
   border-radius: 20rpx;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.25s;
+  font-weight: 600;
 }
 
 .tab-item.active {
-  background: #FF9EC4;
+  background: var(--primary-color, #E8857A);
   color: #FFFFFF;
-  font-weight: bold;
+  font-weight: 700;
+  box-shadow: 0 4rpx 12rpx rgba(232, 133, 122, 0.25);
 }
 
 /* 汇总统计卡片 */
 .summary-card {
-  background: #FFFFFF;
-  border-radius: 32rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
   padding: 32rpx;
   margin: 0 30rpx 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .summary-title {
   font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
   margin-bottom: 24rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .summary-grid {
@@ -549,26 +557,27 @@ onShow(async () => {
 
 .summary-value {
   font-size: 40rpx;
-  font-weight: bold;
-  color: #FF6BA8;
+  font-weight: 800;
+  color: var(--primary-color, #E8857A);
 }
 
 .summary-label {
   font-size: 22rpx;
-  color: #999999;
+  color: var(--text-tertiary, #BDB2B7);
   margin-top: 8rpx;
+  font-weight: 600;
 }
 
 .summary-avg {
   margin-top: 24rpx;
   padding-top: 20rpx;
-  border-top: 1px solid #FFF0F5;
+  border-top: 1px solid var(--divider-color, #F8F0EC);
   text-align: center;
 }
 
 .avg-text {
   font-size: 22rpx;
-  color: #AAAAAA;
+  color: var(--text-tertiary, #BDB2B7);
   line-height: 1.6;
 }
 
@@ -642,18 +651,19 @@ onShow(async () => {
 
 /* 周每日对比柱状图 */
 .week-chart {
-  background: #FFFFFF;
-  border-radius: 32rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
   padding: 32rpx;
   margin: 0 30rpx 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .chart-title {
   font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
   margin-bottom: 24rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .chart-bars {
@@ -673,32 +683,33 @@ onShow(async () => {
 
 .bar-value {
   font-size: 22rpx;
-  color: #FF6BA8;
-  font-weight: bold;
+  color: var(--primary-color, #E8857A);
+  font-weight: 700;
   margin-bottom: 8rpx;
 }
 
 .bar-fill {
   width: 48rpx;
-  background: linear-gradient(180deg, #FF9EC4 0%, #FFD0E2 100%);
+  background: linear-gradient(180deg, #E8857A 0%, #F7C4BA 100%);
   border-radius: 12rpx 12rpx 0 0;
   min-height: 8rpx;
-  transition: height 0.3s;
+  transition: height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .bar-label {
   font-size: 22rpx;
-  color: #999999;
+  color: var(--text-tertiary, #BDB2B7);
   margin-top: 12rpx;
+  font-weight: 600;
 }
 
 /* 记录时间轴 */
 .timeline-section {
   margin: 0 30rpx 30rpx;
-  background: #FFFFFF;
-  border-radius: 32rpx;
+  background: var(--card-color, #FFFFFF);
+  border-radius: var(--card-radius, 28rpx);
   padding: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(255, 158, 196, 0.08);
+  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
 
 .section-header {
@@ -710,13 +721,15 @@ onShow(async () => {
 
 .section-title {
   font-size: 30rpx;
-  font-weight: bold;
-  color: #333333;
+  font-weight: 800;
+  color: var(--text-color, #3D3036);
+  letter-spacing: 0.5rpx;
 }
 
 .section-count {
   font-size: 24rpx;
-  color: #999999;
+  color: var(--text-tertiary, #BDB2B7);
+  font-weight: 600;
 }
 
 .timeline-scroll {
@@ -725,9 +738,10 @@ onShow(async () => {
 
 .empty-tip {
   text-align: center;
-  color: #BBBBBB;
+  color: var(--text-tertiary, #BDB2B7);
   font-size: 28rpx;
   padding: 80rpx 40rpx;
+  line-height: 1.8;
 }
 
 .timeline-item {
@@ -738,31 +752,33 @@ onShow(async () => {
 }
 
 .timeline-time {
-  width: 80rpx;
+  width: 84rpx;
   font-size: 24rpx;
-  color: #999999;
-  padding-top: 12rpx;
+  color: var(--text-tertiary, #BDB2B7);
+  padding-top: 14rpx;
   flex-shrink: 0;
-  font-weight: 500;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .timeline-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 18rpx;
+  height: 18rpx;
   border-radius: 50%;
   margin: 16rpx 16rpx 0 8rpx;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  box-shadow: 0 0 0 4rpx rgba(255, 107, 168, 0.15);
+  box-shadow: 0 0 0 6rpx rgba(232, 133, 122, 0.12);
 }
 
 .timeline-content {
   flex: 1;
-  background: #FAFAFA;
+  background: linear-gradient(135deg, #FDF6F0 0%, #FEFCFA 100%);
   border-radius: 20rpx;
-  padding: 16rpx 20rpx;
+  padding: 18rpx 22rpx;
   margin-left: -4rpx;
+  border: 1rpx solid rgba(240, 230, 224, 0.6);
 }
 
 .timeline-row {
@@ -778,24 +794,24 @@ onShow(async () => {
 
 .timeline-type {
   font-size: 28rpx;
-  font-weight: 600;
-  color: #333333;
+  font-weight: 700;
+  color: var(--text-color, #3D3036);
   margin-right: 16rpx;
   flex-shrink: 0;
 }
 
 .timeline-detail {
   font-size: 24rpx;
-  color: #666666;
+  color: var(--text-secondary, #8A7E84);
   white-space: pre-line;
-  line-height: 1.5;
+  line-height: 1.6;
   flex: 1;
   min-width: 0;
 }
 
 .timeline-date {
   font-size: 22rpx;
-  color: #BBBBBB;
+  color: var(--text-tertiary, #BDB2B7);
   margin-top: 8rpx;
   display: block;
 }

@@ -1,9 +1,14 @@
 <script lang="ts">
 import { db } from './utils/database'
+import { useTheme } from './composables/useTheme'
 
 export default {
   onLaunch: async function() {
     console.log('App Launch')
+    
+    // 初始化主题
+    const { initTheme } = useTheme()
+    initTheme()
     
     // 初始化数据库
     try {
@@ -32,17 +37,33 @@ export default {
 <style>
 /* 全局样式 */
 page {
-  background-color: #FFF5F7;
+  background-color: #FDF6F0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
-/* 全局颜色变量 */
+/* 隐藏原生 tabbar，使用自定义 CustomTabBar */
+.uni-tabbar-bottom {
+  display: none !important;
+}
+
+/* 全局颜色变量 — Soft Cream 体系 */
 :root {
-  --primary-color: #FF9EC4;
-  --secondary-color: #A8E6CF;
-  --background-color: #FFF5F7;
-  --text-color: #333333;
-  --text-secondary: #666666;
-  --border-color: #E5E5E5;
+  --primary-color: #E8857A;
+  --primary-light: #F2A89E;
+  --primary-gradient: linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%);
+  --accent-lavender: #B8A9D4;
+  --accent-mint: #8CC9B0;
+  --accent-peach: #F5C5A3;
+  --accent-sky: #9DC4E0;
+  --background-color: #FDF6F0;
+  --card-color: #FFFFFF;
+  --card-shadow: 0 4rpx 24rpx rgba(232, 133, 122, 0.08);
+  --card-shadow-hover: 0 8rpx 32rpx rgba(232, 133, 122, 0.15);
+  --card-radius: 28rpx;
+  --text-color: #3D3036;
+  --text-secondary: #8A7E84;
+  --text-tertiary: #BDB2B7;
+  --border-color: #F0E6E0;
+  --divider-color: #F8F0EC;
 }
 </style>
