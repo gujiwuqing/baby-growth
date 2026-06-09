@@ -393,6 +393,7 @@ const loadBabyInfo = async () => {
 }
 
 onShow(async () => {
+  uni.hideTabBar({ animation: false })
   initTheme()
   try {
     await db.open()

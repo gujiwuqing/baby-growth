@@ -337,6 +337,7 @@ const initDefaultVaccines = async () => {
 }
 
 onShow(async () => {
+  uni.hideTabBar({ animation: false })
   initTheme()
   // 重置并发锁，防止上次异常退出或清空数据后锁残留
   isInitializing = false

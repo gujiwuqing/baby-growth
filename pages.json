@@ -107,7 +107,24 @@
     {
       "path": "pages/settings/index",
       "style": {
-        "navigationBarTitleText": "设置",
+        "navigationBarTitleText": "我的",
+        "navigationBarBackgroundColor": "#E8857A",
+        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "宝宝信息",
+        "navigationBarBackgroundColor": "#E8857A",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/profile/edit",
+      "style": {
+        "navigationBarTitleText": "编辑信息",
         "navigationBarBackgroundColor": "#E8857A",
         "navigationBarTextStyle": "white"
       }
@@ -146,7 +163,7 @@
       },
       {
         "pagePath": "pages/settings/index",
-        "text": "设置",
+        "text": "我的",
         "iconPath": "static/images/tabbar/settings.png",
         "selectedIconPath": "static/images/tabbar/settings-active.png"
       }

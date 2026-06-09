@@ -1,6 +1,8 @@
 <template>
   <view class="quick-record">
-    <view class="quick-title">快捷记录</view>
+    <view class="quick-header">
+      <text class="quick-title">快捷记录</text>
+    </view>
     <view class="quick-grid">
       <view 
         class="quick-item" 
@@ -8,8 +10,10 @@
         :key="item.type"
         @click="handleClick(item.type)"
       >
-        <view class="quick-icon">{{ item.icon }}</view>
-        <view class="quick-label">{{ item.label }}</view>
+        <view class="quick-icon-circle" :style="{ background: item.bgColor }">
+          <text class="quick-icon">{{ item.icon }}</text>
+        </view>
+        <text class="quick-label">{{ item.label }}</text>
       </view>
     </view>
   </view>
@@ -17,14 +21,14 @@
 
 <script setup lang="ts">
 const quickItems = [
-  { type: 'breast', icon: '🤱', label: '母乳' },
-  { type: 'diaper', icon: '👶', label: '换尿布' },
-  { type: 'supplement', icon: '💊', label: '营养补剂' },
-  { type: 'formula', icon: '🍼', label: '配方奶' },
-  { type: 'bottle', icon: '🍼', label: '瓶喂母乳' },
-  { type: 'sleep', icon: '😴', label: '睡眠' },
-  { type: 'food', icon: '🥣', label: '辅食' },
-  { type: 'growth', icon: '📏', label: '成长指标' }
+  { type: 'breast', icon: '🤱', label: '母乳', bgColor: 'rgba(232, 133, 122, 0.1)' },
+  { type: 'formula', icon: '🍼', label: '配方奶', bgColor: 'rgba(157, 196, 224, 0.12)' },
+  { type: 'bottle', icon: '🍼', label: '瓶喂母乳', bgColor: 'rgba(184, 169, 212, 0.12)' },
+  { type: 'food', icon: '🥣', label: '辅食', bgColor: 'rgba(245, 197, 163, 0.15)' },
+  { type: 'diaper', icon: '👶', label: '换尿布', bgColor: 'rgba(140, 201, 176, 0.12)' },
+  { type: 'sleep', icon: '😴', label: '睡眠', bgColor: 'rgba(184, 169, 212, 0.12)' },
+  { type: 'supplement', icon: '💊', label: '营养补剂', bgColor: 'rgba(232, 133, 122, 0.1)' },
+  { type: 'growth', icon: '📏', label: '成长指标', bgColor: 'rgba(157, 196, 224, 0.12)' }
 ]
 
 const emit = defineEmits<{
@@ -40,16 +44,22 @@ const handleClick = (type: string) => {
 .quick-record {
   background: var(--card-color, #FFFFFF);
   border-radius: var(--card-radius, 16rpx);
-  padding: 24rpx;
-  margin: 24rpx 24rpx 200rpx;
+  padding: 24rpx 24rpx 16rpx;
+  margin: 24rpx 24rpx 0;
   box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
+}
+
+.quick-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
 }
 
 .quick-title {
   font-size: 32rpx;
   font-weight: 700;
   color: var(--text-color, #1A1A1A);
-  margin-bottom: 20rpx;
   padding-left: 4rpx;
   letter-spacing: 0.5rpx;
 }
@@ -57,39 +67,41 @@ const handleClick = (type: string) => {
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16rpx;
+  gap: 8rpx;
 }
 
 .quick-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24rpx 0 18rpx;
-  background: var(--divider-color, #F5F5F5);
-  border-radius: 12rpx;
-  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 16rpx 0;
+  border-radius: 16rpx;
+  transition: transform 0.15s ease, background 0.15s;
 }
 
 .quick-item:active {
-  transform: scale(0.93);
+  transform: scale(0.92);
+  background: rgba(0, 0, 0, 0.02);
 }
 
-.quick-icon {
-  width: 76rpx;
-  height: 76rpx;
+.quick-icon-circle {
+  width: 96rpx;
+  height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 44rpx;
-  margin-bottom: 10rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10rpx;
+}
+
+.quick-icon {
+  font-size: 44rpx;
 }
 
 .quick-label {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: var(--text-secondary, #666666);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.3rpx;
 }
 </style>

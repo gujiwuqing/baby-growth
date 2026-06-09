@@ -4,12 +4,12 @@
       v-for="(tab, index) in tabs"
       :key="tab.pagePath"
       class="tab-item"
-      :class="{ active: currentIndex === index }"
+      :class="{ active: current === index }"
       @click="switchTab(tab, index)"
     >
       <view class="tab-icon-wrap">
         <image
-          v-if="currentIndex === index"
+          v-if="current === index"
           class="tab-icon"
           :src="tab.activeIconData"
           mode="aspectFit"
@@ -21,7 +21,7 @@
           mode="aspectFit"
         />
       </view>
-      <text class="tab-text" :style="currentIndex === index ? { color: activeTheme.primary } : {}">
+      <text class="tab-text" :style="current === index ? { color: activeTheme.primary } : {}">
         {{ tab.text }}
       </text>
     </view>
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
 const props = defineProps<{
@@ -37,11 +37,6 @@ const props = defineProps<{
 }>()
 
 const { activeTheme, themeVars } = useTheme()
-const currentIndex = ref(props.current)
-
-watch(() => props.current, (val) => {
-  currentIndex.value = val
-})
 
 /** 生成 SVG data URI — 每个图标使用独立 path，用 FILL 占位符替换颜色 */
 function buildSvgDataUri(svgTemplate: string, fillColor: string): string {
@@ -73,7 +68,7 @@ const tabs = computed<TabItem[]>(() => {
     { pagePath: '/pages/index/index', text: '首页', iconKey: 'home' },
     { pagePath: '/pages/growth/index', text: '身高体重', iconKey: 'growth' },
     { pagePath: '/pages/vaccine/index', text: '疫苗接种', iconKey: 'vaccine' },
-    { pagePath: '/pages/settings/index', text: '设置', iconKey: 'settings' }
+    { pagePath: '/pages/settings/index', text: '我的', iconKey: 'settings' }
   ].map(tab => ({
     ...tab,
     iconData: buildSvgDataUri(iconTemplates[tab.iconKey as keyof typeof iconTemplates], inactiveColor),
@@ -82,8 +77,7 @@ const tabs = computed<TabItem[]>(() => {
 })
 
 const switchTab = (tab: TabItem, index: number) => {
-  if (currentIndex.value === index) return
-  currentIndex.value = index
+  if (props.current === index) return
   uni.switchTab({ url: tab.pagePath })
 }
 </script>
