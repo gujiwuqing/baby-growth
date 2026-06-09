@@ -172,6 +172,11 @@ onLoad((options: any) => {
     feedType.value = t
   }
   uni.setNavigationBarTitle({ title: titleMap[feedType.value] || '喂奶记录' })
+  // 在 onLoad 中恢复计时状态（页面创建/重建场景）
+  if (feedType.value === 'breast' && breastMode.value === 'timer') {
+    restoreTimerState()
+    restoredInOnLoad = true // 标记已恢复，避免 onShow 重复恢复
+  }
 })
 
 const formData = ref({
@@ -185,12 +190,16 @@ const breastMode = ref<'timer' | 'manual'>('timer')
 const leftDuration = ref(0) // 秒
 const rightDuration = ref(0) // 秒
 const runningSide = ref<'' | 'left' | 'right'>('')
+// timerStart: 当前正在计时那一侧的"开始计时绝对时间点(ms)"
+// 用于补算：从 timerStart 到 Date.now() 的差值就是这一侧从开始到现在的完整时长
 const timerStart = ref(0)
-const baseLeft = ref(0)
-const baseRight = ref(0)
+// otherSideDuration: 当前不在计时的那一侧的累计秒数
+// 比如左侧计时中，otherSideDuration 就是右侧的累计值
+const otherSideDuration = ref(0)
 let timerHandle: any = null
 const lastBreastTip = ref('')
-const hasUnsavedTimer = ref(false) // 是否有未保存的计时状态
+const hasUnsavedTimer = ref(false)
+let restoredInOnLoad = false
 
 // 手动输入（分钟）
 const manualLeft = ref('')
@@ -205,60 +214,43 @@ const formatDuration = (seconds: number) => {
 // 保存计时状态到 Storage
 const saveTimerState = () => {
   if (feedType.value !== 'breast' || breastMode.value !== 'timer') return
-  const state = {
-    leftDuration: leftDuration.value,
-    rightDuration: rightDuration.value,
+  uni.setStorageSync('breast_timer_state', JSON.stringify({
     runningSide: runningSide.value,
-    timerStart: timerStart.value,
-    baseLeft: baseLeft.value,
-    baseRight: baseRight.value,
-    savedAt: Date.now()
-  }
-  uni.setStorageSync('breast_timer_state', JSON.stringify(state))
+    timerStart: runningSide.value ? timerStart.value : 0,
+    otherSideDuration: otherSideDuration.value,
+    leftDuration: leftDuration.value,
+    rightDuration: rightDuration.value
+  }))
 }
 
 // 从 Storage 恢复计时状态
 const restoreTimerState = () => {
   if (feedType.value !== 'breast' || breastMode.value !== 'timer') return
   try {
-    const saved = uni.getStorageSync('breast_timer_state')
-    if (!saved) return
+    const raw = uni.getStorageSync('breast_timer_state')
+    if (!raw) return
+    const state = JSON.parse(raw)
     
-    const state = JSON.parse(saved)
-    const elapsedSinceSaved = Math.floor((Date.now() - state.savedAt) / 1000)
-    
-    // 如果保存时正在计时，需要补算暂停期间的时长
-    if (state.runningSide) {
+    if (state.runningSide === 'left' || state.runningSide === 'right') {
+      // 正在计时 → 用 timerStart 绝对时间点精确补算
+      // 从 timerStart 到现在的差值 = 这一侧从开始到现在的完整时长
+      const currentSideDuration = Math.round((Date.now() - state.timerStart) / 1000)
       if (state.runningSide === 'left') {
-        leftDuration.value = state.baseLeft + elapsedSinceSaved
+        leftDuration.value = currentSideDuration
+        rightDuration.value = state.otherSideDuration
       } else {
-        rightDuration.value = state.baseRight + elapsedSinceSaved
+        leftDuration.value = state.otherSideDuration
+        rightDuration.value = currentSideDuration
       }
+      // 恢复计时器
+      runningSide.value = state.runningSide
+      timerStart.value = state.timerStart
+      otherSideDuration.value = state.otherSideDuration
+      startTimer()
     } else {
-      // 已暂停状态，直接恢复
+      // 用户主动暂停 → 只恢复时长，不补算，不恢复计时器
       leftDuration.value = state.leftDuration
       rightDuration.value = state.rightDuration
-    }
-    
-    hasUnsavedTimer.value = true
-    
-    // 提示用户有未保存的计时
-    if (leftDuration.value + rightDuration.value > 0) {
-      uni.showModal({
-        title: '恢复计时',
-        content: `发现上次未保存的计时：左侧 ${formatDuration(leftDuration.value)}，右侧 ${formatDuration(rightDuration.value)}\n\n是否继续计时？`,
-        success: (res) => {
-          if (res.confirm) {
-            // 用户选择继续，保持恢复的状态
-          } else {
-            // 用户选择不继续，清空计时
-            leftDuration.value = 0
-            rightDuration.value = 0
-            uni.removeStorageSync('breast_timer_state')
-            hasUnsavedTimer.value = false
-          }
-        }
-      })
     }
   } catch (e) {
     console.error('恢复计时状态失败', e)
@@ -270,26 +262,35 @@ const toggleTimer = (side: 'left' | 'right') => {
     // 暂停当前侧
     stopTimer()
     runningSide.value = ''
-    saveTimerState() // 暂停时保存状态
+    otherSideDuration.value = 0
+    saveTimerState()
     return
   }
   // 若另一侧在计时，先结算
   if (runningSide.value) {
     stopTimer()
   }
+  // 记录非计时侧的累计值
+  otherSideDuration.value = side === 'left' ? rightDuration.value : leftDuration.value
+  // 关键：timerStart 倒推，让 (now - timerStart) 等于当前侧已有的累计时长
+  // 这样定时器回调算出的 elapsed 会从已有时长开始累加，而不是从0开始
+  const alreadyElapsed = side === 'left' ? leftDuration.value : rightDuration.value
+  timerStart.value = Date.now() - alreadyElapsed * 1000
   runningSide.value = side
-  timerStart.value = Date.now()
-  baseLeft.value = leftDuration.value
-  baseRight.value = rightDuration.value
+  startTimer()
+}
+
+const startTimer = () => {
+  if (timerHandle) clearInterval(timerHandle)
   timerHandle = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - timerStart.value) / 1000)
+    const elapsed = Math.round((Date.now() - timerStart.value) / 1000)
     if (runningSide.value === 'left') {
-      leftDuration.value = baseLeft.value + elapsed
+      leftDuration.value = elapsed
+      rightDuration.value = otherSideDuration.value
     } else if (runningSide.value === 'right') {
-      rightDuration.value = baseRight.value + elapsed
+      leftDuration.value = otherSideDuration.value
+      rightDuration.value = elapsed
     }
-    // 每秒保存状态
-    saveTimerState()
   }, 1000)
 }
 
@@ -298,24 +299,20 @@ const stopTimer = () => {
     clearInterval(timerHandle)
     timerHandle = null
   }
-  saveTimerState() // 停止时保存状态
 }
 
-// 页面隐藏时保存状态
 onHide(() => {
   saveTimerState()
 })
 
-// 页面显示时恢复状态
 onShow(() => {
-  if (feedType.value === 'breast' && breastMode.value === 'timer') {
+  if (!restoredInOnLoad && feedType.value === 'breast' && breastMode.value === 'timer') {
     restoreTimerState()
   }
+  restoredInOnLoad = false
 })
 
 onUnmounted(() => {
-  stopTimer()
-  // 保存计时状态（不删除，下次进入可恢复）
   saveTimerState()
 })
 
@@ -383,9 +380,12 @@ const handleSave = () => {
         VALUES ('${uniqueId}', 'breast', 0, 'min', ${leftSec}, ${rightSec}, ${startTs}, ${endTs}, '${note}', ${startTs}, '${deviceId}', ${createdAt})
       `)
       
-      // 保存成功后清除计时状态
+      // 保存成功后清除计时状态和 ref 值
       uni.removeStorageSync('breast_timer_state')
-      hasUnsavedTimer.value = false
+      leftDuration.value = 0
+      rightDuration.value = 0
+      runningSide.value = ''
+      otherSideDuration.value = 0
     } else {
       const amount = Number(formData.value.amount) || 0
       const ts = timeStrToTimestamp(formData.value.time)
