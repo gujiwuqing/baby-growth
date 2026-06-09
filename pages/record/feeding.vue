@@ -1,5 +1,5 @@
 <template>
-  <view class="feeding-page">
+  <view class="feeding-page" :style="themeVars">
     <!-- 母乳：计时 / 手动输入 切换 -->
     <view v-if="feedType === 'breast'" class="breast-wrapper">
       <view class="mode-switch">
@@ -154,8 +154,10 @@ import { onLoad, onShow, onHide } from '@dcloudio/uni-app'
 import { db } from '@/utils/database'
 import { getDeviceId, formatTime } from '@/utils/device'
 import { useRecordSave } from '@/composables/useRecordSave'
+import { useTheme } from '@/composables/useTheme'
 
 const { timeStrToTimestamp, cancel, save } = useRecordSave('feeding')
+const { themeVars } = useTheme()
 
 // 喂养类型：breast(母乳计时) / formula(配方奶) / bottle(瓶喂母乳)
 const feedType = ref<'breast' | 'formula' | 'bottle'>('breast')
@@ -431,7 +433,7 @@ onMounted(async () => {
 <style scoped>
 .feeding-page {
   min-height: 100vh;
-  background: #FFF5F7;
+  background: var(--primary-bg);
   padding: 30rpx;
 }
 
@@ -524,7 +526,7 @@ onMounted(async () => {
 }
 
 .mode-tab.active {
-  background: #FF9EC4;
+  background: var(--primary-light);
   color: #FFFFFF;
   font-weight: bold;
 }
@@ -539,8 +541,8 @@ onMounted(async () => {
 .last-tip {
   text-align: center;
   font-size: 26rpx;
-  color: #FF9EC4;
-  background: #FFEEF4;
+  color: var(--primary-light);
+  background: var(--primary-bg);
   border-radius: 40rpx;
   padding: 12rpx 0;
   margin-bottom: 30rpx;
@@ -581,22 +583,22 @@ onMounted(async () => {
   width: 240rpx;
   height: 240rpx;
   border-radius: 50%;
-  background: radial-gradient(circle, #FFF5F7 0%, #FFE0EC 100%);
+  background: radial-gradient(circle, var(--primary-bg) 0%, var(--primary-lighter) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(255, 158, 196, 0.25);
+  box-shadow: 0 8rpx 24rpx var(--primary-shadow);
 }
 
 .timer-circle.running {
-  background: radial-gradient(circle, #FFE0EC 0%, #FF9EC4 100%);
+  background: radial-gradient(circle, var(--primary-lighter) 0%, var(--primary-light) 100%);
 }
 
 .side-label {
   font-size: 32rpx;
   font-weight: bold;
-  color: #FF9EC4;
+  color: var(--primary-light);
   margin-bottom: 12rpx;
 }
 
@@ -606,7 +608,7 @@ onMounted(async () => {
 
 .side-icon {
   font-size: 64rpx;
-  color: #FF6BA8;
+  color: var(--primary-color);
 }
 
 .timer-circle.running .side-icon {
@@ -650,15 +652,15 @@ onMounted(async () => {
 .bottle-cap {
   width: 120rpx;
   height: 36rpx;
-  background: #FF9EC4;
+  background: var(--primary-light);
   border-radius: 24rpx 24rpx 8rpx 8rpx;
 }
 
 .bottle-body {
   width: 360rpx;
-  background: linear-gradient(180deg, #FFF5F7 0%, #FFE0EC 100%);
+  background: linear-gradient(180deg, var(--primary-bg) 0%, var(--primary-lighter) 100%);
   border-radius: 0 0 80rpx 80rpx;
-  border: 4rpx solid #FFD0E2;
+  border: 4rpx solid var(--primary-lighter);
   border-top: none;
   padding: 48rpx 24rpx 60rpx;
   display: flex;
@@ -669,13 +671,13 @@ onMounted(async () => {
 .amount-display {
   font-size: 80rpx;
   font-weight: bold;
-  color: #FF6BA8;
+  color: var(--primary-color);
   margin-bottom: 32rpx;
 }
 
 .amount-unit {
   font-size: 36rpx;
-  color: #FF9EC4;
+  color: var(--primary-light);
 }
 
 .quick-amounts {
@@ -692,14 +694,14 @@ onMounted(async () => {
   background: #FFFFFF;
   border-radius: 32rpx;
   font-size: 26rpx;
-  color: #FF9EC4;
-  border: 1px solid #FFD0E2;
+  color: var(--primary-light);
+  border: 1px solid var(--primary-lighter);
 }
 
 .quick-amount.active {
-  background: #FF9EC4;
+  background: var(--primary-light);
   color: #FFFFFF;
-  border-color: #FF9EC4;
+  border-color: var(--primary-light);
 }
 
 .amount-stepper {
@@ -713,10 +715,10 @@ onMounted(async () => {
   width: 100rpx;
   text-align: center;
   padding: 20rpx 0;
-  background: #FFEEF4;
+  background: var(--primary-bg);
   border-radius: 16rpx;
   font-size: 28rpx;
-  color: #FF6BA8;
+  color: var(--primary-color);
 }
 
 .stepper-input {
@@ -748,8 +750,9 @@ onMounted(async () => {
   flex: 1;
   padding: 20rpx 0;
   border-radius: 40rpx;
-  background: #FF9EC4;
+  background: var(--primary-gradient);
   font-size: 28rpx;
   color: #FFFFFF;
+  box-shadow: 0 6rpx 20rpx var(--primary-shadow);
 }
 </style>
