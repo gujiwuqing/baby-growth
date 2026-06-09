@@ -117,7 +117,7 @@
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "宝宝成长记",
     "navigationBarBackgroundColor": "#E8857A",
-    "backgroundColor": "#FDF6F0"
+    "backgroundColor": "#F5F5F5"
   },
   "tabBar": {
     "custom": true,

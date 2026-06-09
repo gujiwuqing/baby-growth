@@ -262,16 +262,17 @@ onShow(async () => {
 <style scoped>
 .settings-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
+  background: var(--background-color, #F5F5F5);
   padding: 30rpx;
+  padding-bottom: 240rpx;
 }
 
 .settings-card {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
-  padding: 36rpx;
+  border-radius: var(--card-radius, 16rpx);
+  padding: 32rpx;
   margin-bottom: 24rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .card-title {
@@ -285,14 +286,7 @@ onShow(async () => {
 }
 
 .card-title::after {
-  content: '';
-  position: absolute;
-  left: 4rpx;
-  bottom: -8rpx;
-  width: 48rpx;
-  height: 6rpx;
-  background: var(--primary-gradient, linear-gradient(90deg, #E8857A, #F2A89E));
-  border-radius: 3rpx;
+  display: none;
 }
 
 .form-item {
@@ -309,21 +303,21 @@ onShow(async () => {
 .form-input {
   width: 100%;
   padding: 24rpx;
-  border: 2rpx solid var(--border-color, #F0E6E0);
+  border: 1rpx solid var(--border-color, #EEEEEE);
   border-radius: 20rpx;
   font-size: 28rpx;
   color: var(--text-color, #3D3036);
-  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  background: #F9F9F9;
   transition: border-color 0.2s;
 }
 
 .form-picker {
   padding: 24rpx;
-  border: 2rpx solid var(--border-color, #F0E6E0);
+  border: 1rpx solid var(--border-color, #EEEEEE);
   border-radius: 20rpx;
   font-size: 28rpx;
   color: var(--text-color, #3D3036);
-  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  background: #F9F9F9;
 }
 
 .gender-selector {
@@ -336,7 +330,7 @@ onShow(async () => {
   padding: 24rpx;
   text-align: center;
   border: 2rpx solid var(--border-color, #F0E6E0);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
   font-size: 28rpx;
   color: var(--text-secondary, #8A7E84);
   background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
@@ -345,7 +339,7 @@ onShow(async () => {
 }
 
 .gender-option.active {
-  background: linear-gradient(135deg, rgba(232, 133, 122, 0.08) 0%, rgba(242, 168, 158, 0.12) 100%);
+  background: var(--primary-bg, rgba(232,133,122,0.08));
   border-color: var(--primary-color, #E8857A);
   color: var(--primary-color, #E8857A);
   box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.12);
@@ -355,7 +349,7 @@ onShow(async () => {
   width: 100%;
   padding: 26rpx 0;
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
-  border-radius: 50rpx;
+  border-radius: 12rpx;
   font-size: 30rpx;
   font-weight: 700;
   color: #FFFFFF;
@@ -401,7 +395,7 @@ onShow(async () => {
   font-size: 40rpx;
   margin-right: 20rpx;
   background: var(--divider-color, #F8F0EC);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
   flex-shrink: 0;
 }
 

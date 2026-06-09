@@ -421,8 +421,8 @@ onShow(async () => {
 <style scoped>
 .records-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
-  padding-bottom: 320rpx;
+  background: var(--background-color, #F5F5F5);
+  padding-bottom: 340rpx;
 }
 
 /* 维度切换 */
@@ -430,9 +430,9 @@ onShow(async () => {
   display: flex;
   background: var(--card-color, #FFFFFF);
   margin: 20rpx 30rpx 0;
-  border-radius: 40rpx;
+  border-radius: 12rpx;
   padding: 8rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .dim-item {
@@ -441,7 +441,7 @@ onShow(async () => {
   padding: 18rpx 0;
   font-size: 28rpx;
   color: var(--text-tertiary, #BDB2B7);
-  border-radius: 36rpx;
+  border-radius: 10rpx;
   transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   font-weight: 600;
 }
@@ -450,6 +450,7 @@ onShow(async () => {
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
   color: #FFFFFF;
   font-weight: 700;
+  border-radius: 10rpx;
   box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.3);
 }
 
@@ -466,13 +467,12 @@ onShow(async () => {
   width: 56rpx;
   height: 56rpx;
   border-radius: 50%;
-  background: var(--card-color, #FFFFFF);
+  background: #F5F5F5;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 36rpx;
   color: var(--primary-color, #E8857A);
-  box-shadow: 0 2rpx 12rpx rgba(232, 133, 122, 0.1);
 }
 
 .nav-label {
@@ -502,16 +502,16 @@ onShow(async () => {
   display: inline-flex;
   background: var(--card-color, #FFFFFF);
   padding: 12rpx 16rpx;
-  border-radius: 32rpx;
+  border-radius: 12rpx;
   gap: 12rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .tab-item {
   padding: 14rpx 24rpx;
   font-size: 24rpx;
   color: var(--text-secondary, #8A7E84);
-  border-radius: 20rpx;
+  border-radius: 8rpx;
   white-space: nowrap;
   transition: all 0.25s;
   font-weight: 600;
@@ -521,16 +521,16 @@ onShow(async () => {
   background: var(--primary-color, #E8857A);
   color: #FFFFFF;
   font-weight: 700;
-  box-shadow: 0 4rpx 12rpx rgba(232, 133, 122, 0.25);
+  box-shadow: none;
 }
 
 /* 汇总统计卡片 */
 .summary-card {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 32rpx;
   margin: 0 30rpx 24rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .summary-title {
@@ -652,10 +652,10 @@ onShow(async () => {
 /* 周每日对比柱状图 */
 .week-chart {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 32rpx;
   margin: 0 30rpx 24rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .chart-title {
@@ -707,9 +707,9 @@ onShow(async () => {
 .timeline-section {
   margin: 0 30rpx 30rpx;
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 30rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .section-header {
@@ -774,11 +774,10 @@ onShow(async () => {
 
 .timeline-content {
   flex: 1;
-  background: linear-gradient(135deg, #FDF6F0 0%, #FEFCFA 100%);
+  background: #F9F9F9;
   border-radius: 20rpx;
   padding: 18rpx 22rpx;
   margin-left: -4rpx;
-  border: 1rpx solid rgba(240, 230, 224, 0.6);
 }
 
 .timeline-row {

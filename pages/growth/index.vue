@@ -425,7 +425,7 @@ onShow(async () => {
 <style scoped>
 .growth-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
+  background: var(--background-color, #F5F5F5);
   padding: 30rpx;
   padding-bottom: 200rpx;
 }
@@ -433,7 +433,7 @@ onShow(async () => {
 /* 最新数据卡片 */
 .latest-card {
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
-  border-radius: 36rpx;
+  border-radius: 20rpx;
   padding: 40rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 12rpx 40rpx rgba(232, 133, 122, 0.25), 0 4rpx 12rpx rgba(232, 133, 122, 0.1);
@@ -442,14 +442,7 @@ onShow(async () => {
 }
 
 .latest-card::after {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -15%;
-  width: 240rpx;
-  height: 240rpx;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
-  border-radius: 50%;
+  display: none;
 }
 
 .card-title {
@@ -516,10 +509,10 @@ onShow(async () => {
 /* 成长曲线 */
 .curve-section {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 30rpx;
   margin-bottom: 24rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .section-header {
@@ -545,7 +538,7 @@ onShow(async () => {
   font-size: 26rpx;
   color: var(--text-tertiary, #BDB2B7);
   padding: 10rpx 24rpx;
-  border-radius: 24rpx;
+  border-radius: 8rpx;
   background: var(--divider-color, #F8F0EC);
   font-weight: 600;
   transition: all 0.2s;
@@ -637,7 +630,7 @@ onShow(async () => {
   left: 50%;
   transform: translateX(-50%);
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
-  border-radius: 50rpx;
+  border-radius: 12rpx;
   padding: 0 50rpx;
   border: none;
   box-shadow: 0 12rpx 32rpx rgba(232, 133, 122, 0.35);
@@ -666,9 +659,9 @@ onShow(async () => {
 /* 历史记录 */
 .history-section {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 30rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .history-scroll {

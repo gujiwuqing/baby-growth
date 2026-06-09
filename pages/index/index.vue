@@ -232,22 +232,22 @@ onShow(async () => {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
+  background: var(--background-color, #F5F5F5);
   padding-bottom: 320rpx;
 }
 
 /* ===== 异常提示区域 ===== */
 .alert-section {
-  margin: 24rpx 30rpx 0;
+  margin: 24rpx 24rpx 0;
 }
 
 .alert-item {
   display: flex;
   align-items: flex-start;
   gap: 20rpx;
-  padding: 28rpx 30rpx;
-  border-radius: var(--card-radius, 28rpx);
-  margin-bottom: 16rpx;
+  padding: 24rpx;
+  border-radius: var(--card-radius, 16rpx);
+  margin-bottom: 12rpx;
   backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
@@ -316,12 +316,12 @@ onShow(async () => {
 /* ===== 记录总览入口 ===== */
 .feeding-entry {
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
-  margin: 24rpx 30rpx;
-  border-radius: 36rpx;
-  padding: 44rpx 36rpx;
+  margin: 24rpx 24rpx;
+  border-radius: 20rpx;
+  padding: 36rpx 28rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 12rpx 40rpx rgba(232, 133, 122, 0.25), 0 4rpx 12rpx rgba(232, 133, 122, 0.1);
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
   transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s;
   position: relative;
   overflow: hidden;
@@ -340,12 +340,12 @@ onShow(async () => {
 
 .feeding-entry:active {
   transform: scale(0.97);
-  box-shadow: 0 6rpx 20rpx rgba(232, 133, 122, 0.2);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
 }
 
 .entry-icon {
-  font-size: 80rpx;
-  margin-right: 28rpx;
+  font-size: 72rpx;
+  margin-right: 24rpx;
   position: relative;
   z-index: 1;
   filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));
@@ -396,32 +396,20 @@ onShow(async () => {
 
 /* ===== 今日记录 ===== */
 .today-section {
-  margin: 24rpx 30rpx;
+  margin: 24rpx 24rpx;
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
-  padding: 32rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  border-radius: var(--card-radius, 16rpx);
+  padding: 24rpx;
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .section-title {
   font-size: 32rpx;
-  font-weight: 800;
-  color: var(--text-color, #3D3036);
-  margin-bottom: 28rpx;
+  font-weight: 700;
+  color: var(--text-color, #1A1A1A);
+  margin-bottom: 24rpx;
   padding-left: 4rpx;
   letter-spacing: 0.5rpx;
-  position: relative;
-}
-
-.section-title::after {
-  content: '';
-  position: absolute;
-  left: 4rpx;
-  bottom: -8rpx;
-  width: 48rpx;
-  height: 6rpx;
-  background: var(--primary-gradient, linear-gradient(90deg, #E8857A, #F2A89E));
-  border-radius: 3rpx;
 }
 
 .today-scroll {
@@ -467,11 +455,11 @@ onShow(async () => {
 
 .timeline-content {
   flex: 1;
-  background: linear-gradient(135deg, #FDF6F0 0%, #FEFCFA 100%);
-  border-radius: 20rpx;
-  padding: 18rpx 22rpx;
+  background: var(--divider-color, #F5F5F5);
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
   margin-left: -4rpx;
-  border: 1rpx solid rgba(240, 230, 224, 0.6);
+  border: 1rpx solid var(--border-color, #EEEEEE);
 }
 
 .timeline-row {

@@ -393,15 +393,15 @@ onShow(async () => {
 <style scoped>
 .vaccine-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
+  background: var(--background-color, #F5F5F5);
   padding: 30rpx;
-  padding-bottom: 40rpx;
+  padding-bottom: 200rpx;
 }
 
 /* 进度卡片 */
 .progress-card {
   background: linear-gradient(135deg, #8CC9B0 0%, #A8DBC5 50%, #C2E8D6 100%);
-  border-radius: 36rpx;
+  border-radius: 20rpx;
   padding: 40rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 12rpx 40rpx rgba(140, 201, 176, 0.25), 0 4rpx 12rpx rgba(140, 201, 176, 0.1);
@@ -410,14 +410,7 @@ onShow(async () => {
 }
 
 .progress-card::after {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -15%;
-  width: 240rpx;
-  height: 240rpx;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
-  border-radius: 50%;
+  display: none;
 }
 
 .progress-title {
@@ -463,10 +456,10 @@ onShow(async () => {
 /* 即将接种 */
 .upcoming-card {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 30rpx;
   margin-bottom: 24rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
   display: flex;
   align-items: center;
   gap: 24rpx;
@@ -514,9 +507,9 @@ onShow(async () => {
 /* 接种计划 */
 .plan-section {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 30rpx;
-  box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
+  box-shadow: var(--card-shadow, 0 2rpx 12rpx rgba(0,0,0,0.06));
 }
 
 .section-header {
@@ -542,7 +535,7 @@ onShow(async () => {
   font-size: 26rpx;
   color: var(--text-tertiary, #BDB2B7);
   padding: 10rpx 24rpx;
-  border-radius: 24rpx;
+  border-radius: 8rpx;
   background: var(--divider-color, #F8F0EC);
   font-weight: 600;
   transition: all 0.2s;
@@ -648,7 +641,7 @@ onShow(async () => {
   color: #FFFFFF;
   background: var(--accent-mint, #8CC9B0);
   padding: 12rpx 28rpx;
-  border-radius: 24rpx;
+  border-radius: 8rpx;
   font-weight: 600;
   box-shadow: 0 4rpx 12rpx rgba(140, 201, 176, 0.3);
   transition: transform 0.2s, box-shadow 0.2s;

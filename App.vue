@@ -37,7 +37,7 @@ export default {
 <style>
 /* 全局样式 */
 page {
-  background-color: #FDF6F0;
+  background-color: #F5F5F5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
@@ -46,24 +46,28 @@ page {
   display: none !important;
 }
 
-/* 全局颜色变量 — Soft Cream 体系 */
+/* 全局颜色变量 — APP 风格体系 */
 :root {
   --primary-color: #E8857A;
   --primary-light: #F2A89E;
   --primary-gradient: linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%);
+  --primary-gradient-h: linear-gradient(90deg, #E8857A 0%, #F2A89E 100%);
+  --primary-shadow: rgba(232, 133, 122, 0.25);
+  --primary-shadow-light: rgba(232, 133, 122, 0.1);
+  --primary-bg: rgba(232, 133, 122, 0.08);
   --accent-lavender: #B8A9D4;
   --accent-mint: #8CC9B0;
   --accent-peach: #F5C5A3;
   --accent-sky: #9DC4E0;
-  --background-color: #FDF6F0;
+  --background-color: #F5F5F5;
   --card-color: #FFFFFF;
-  --card-shadow: 0 4rpx 24rpx rgba(232, 133, 122, 0.08);
-  --card-shadow-hover: 0 8rpx 32rpx rgba(232, 133, 122, 0.15);
-  --card-radius: 28rpx;
-  --text-color: #3D3036;
-  --text-secondary: #8A7E84;
-  --text-tertiary: #BDB2B7;
-  --border-color: #F0E6E0;
-  --divider-color: #F8F0EC;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  --card-radius: 16rpx;
+  --text-color: #1A1A1A;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border-color: #EEEEEE;
+  --divider-color: #F5F5F5;
 }
 </style>

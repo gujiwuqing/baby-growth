@@ -39,14 +39,14 @@ const onCancel = () => emit('cancel')
 <style scoped>
 .record-page {
   min-height: 100vh;
-  background: var(--background-color, #FDF6F0);
+  background: var(--background-color, #F5F5F5);
   padding: 30rpx;
   padding-bottom: 60rpx;
 }
 
 .form-section {
   background: var(--card-color, #FFFFFF);
-  border-radius: var(--card-radius, 28rpx);
+  border-radius: var(--card-radius, 16rpx);
   padding: 36rpx;
   box-shadow: var(--card-shadow, 0 4rpx 24rpx rgba(232, 133, 122, 0.08));
 }
@@ -61,7 +61,7 @@ const onCancel = () => emit('cancel')
   flex: 1;
   padding: 22rpx 0;
   border: 2rpx solid var(--border-color, #F0E6E0);
-  border-radius: 40rpx;
+  border-radius: 12rpx;
   background: var(--card-color, #FFFFFF);
   font-size: 28rpx;
   color: var(--text-secondary, #8A7E84);
@@ -76,7 +76,7 @@ const onCancel = () => emit('cancel')
 .btn-save {
   flex: 1;
   padding: 22rpx 0;
-  border-radius: 40rpx;
+  border-radius: 12rpx;
   background: var(--primary-gradient, linear-gradient(135deg, #E8857A 0%, #F2A89E 50%, #F7C4BA 100%));
   font-size: 28rpx;
   color: #FFFFFF;
@@ -110,7 +110,7 @@ const onCancel = () => emit('cancel')
   border-radius: 20rpx;
   font-size: 28rpx;
   color: var(--text-color, #3D3036);
-  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  background: #F9F9F9;
 }
 
 .record-page :deep(.form-input) {
@@ -121,7 +121,7 @@ const onCancel = () => emit('cancel')
   font-size: 28rpx;
   box-sizing: border-box;
   color: var(--text-color, #3D3036);
-  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  background: #F9F9F9;
   transition: border-color 0.2s;
 }
 
@@ -134,7 +134,7 @@ const onCancel = () => emit('cancel')
   min-height: 160rpx;
   box-sizing: border-box;
   color: var(--text-color, #3D3036);
-  background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
+  background: #F9F9F9;
 }
 
 /* 通用选项按钮组（类型/状态等多选一） */
@@ -150,7 +150,7 @@ const onCancel = () => emit('cancel')
   text-align: center;
   padding: 24rpx 0;
   border: 2rpx solid var(--border-color, #F0E6E0);
-  border-radius: 20rpx;
+  border-radius: 10rpx;
   font-size: 28rpx;
   color: var(--text-secondary, #8A7E84);
   background: linear-gradient(135deg, #FEFCFA 0%, #FDF6F0 100%);
@@ -163,6 +163,6 @@ const onCancel = () => emit('cancel')
   border-color: var(--primary-color, #E8857A);
   color: #FFFFFF;
   font-weight: 700;
-  box-shadow: 0 4rpx 16rpx rgba(232, 133, 122, 0.25);
+  box-shadow: none;
 }
 </style>
